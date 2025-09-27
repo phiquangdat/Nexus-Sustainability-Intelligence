@@ -1,6 +1,6 @@
 import { supabase, TABLES } from "../lib/supabase";
 import type {
-  PowerPlantData,
+  PowerPlantSummary,
   EUETSReport,
   ScatterData,
   Co2IntensityRecord,
@@ -9,133 +9,129 @@ import type {
 } from "../types";
 
 export class DataService {
-  // Power Plants
-  static async getPowerPlants(): Promise<PowerPlantData[]> {
-    const { data, error } = await supabase
-      .from(TABLES.POWER_PLANTS)
-      .select("*")
-      .order("name");
+  // Get all power plants
+  static async getPowerPlants(): Promise<PowerPlantSummary[]> {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.POWER_PLANTS)
+        .select("*")
+        .order("name", { ascending: true });
 
-    if (error) {
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
       console.error("Error fetching power plants:", error);
-      return [];
+      throw error;
     }
-
-    return data || [];
   }
 
-  static async getPowerPlantById(id: string): Promise<PowerPlantData | null> {
-    const { data, error } = await supabase
-      .from(TABLES.POWER_PLANTS)
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      console.error("Error fetching power plant:", error);
-      return null;
-    }
-
-    return data;
-  }
-
-  // EU ETS Reports
+  // Get EU ETS reports
   static async getEUETSReports(): Promise<EUETSReport[]> {
-    const { data, error } = await supabase
-      .from(TABLES.EU_ETS_REPORTS)
-      .select("*")
-      .order("generated_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.EU_ETS_REPORTS)
+        .select("*")
+        .order("generated_at", { ascending: false });
 
-    if (error) {
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
       console.error("Error fetching EU ETS reports:", error);
-      return [];
+      throw error;
     }
-
-    return data || [];
   }
 
+  // Get EU ETS report by ID
   static async getEUETSReportById(id: string): Promise<EUETSReport | null> {
-    const { data, error } = await supabase
-      .from(TABLES.EU_ETS_REPORTS)
-      .select("*")
-      .eq("id", id)
-      .single();
+    try {
+      if (id === "latest") {
+        const { data, error } = await supabase
+          .from(TABLES.EU_ETS_REPORTS)
+          .select("*")
+          .order("generated_at", { ascending: false })
+          .limit(1)
+          .single();
 
-    if (error) {
+        if (error) throw error;
+        return data;
+      }
+
+      const { data, error } = await supabase
+        .from(TABLES.EU_ETS_REPORTS)
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
       console.error("Error fetching EU ETS report:", error);
-      return null;
+      throw error;
     }
-
-    return data;
   }
 
-  // Scatter Data
+  // Get scatter data
   static async getScatterData(): Promise<ScatterData[]> {
-    const { data, error } = await supabase
-      .from(TABLES.SCATTER_DATA)
-      .select("*")
-      .order("renewable_percentage");
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.SCATTER_DATA)
+        .select("*")
+        .order("renewable_percentage", { ascending: true });
 
-    if (error) {
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
       console.error("Error fetching scatter data:", error);
-      return [];
+      throw error;
     }
-
-    return data || [];
   }
 
-  // CO2 Intensity Records
-  static async getCo2IntensityRecords(
-    limit: number = 30
-  ): Promise<Co2IntensityRecord[]> {
-    const { data, error } = await supabase
-      .from(TABLES.CO2_INTENSITY)
-      .select("*")
-      .order("timestamp", { ascending: false })
-      .limit(limit);
+  // Get CO2 intensity records
+  static async getCo2IntensityRecords(): Promise<Co2IntensityRecord[]> {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.CO2_INTENSITY)
+        .select("*")
+        .order("recorded_at", { ascending: false });
 
-    if (error) {
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
       console.error("Error fetching CO2 intensity records:", error);
-      return [];
+      throw error;
     }
-
-    return data || [];
   }
 
-  // Generation Mix Records
-  static async getGenerationMixRecords(
-    limit: number = 30
-  ): Promise<GenerationMixRecord[]> {
-    const { data, error } = await supabase
-      .from(TABLES.GENERATION_MIX)
-      .select("*")
-      .order("timestamp", { ascending: false })
-      .limit(limit);
+  // Get generation mix records
+  static async getGenerationMixRecords(): Promise<GenerationMixRecord[]> {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.GENERATION_MIX)
+        .select("*")
+        .order("recorded_at", { ascending: false });
 
-    if (error) {
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
       console.error("Error fetching generation mix records:", error);
-      return [];
+      throw error;
     }
-
-    return data || [];
   }
 
-  // Net Zero Alignment Records
-  static async getNetZeroAlignmentRecords(
-    limit: number = 30
-  ): Promise<NetZeroAlignmentRecord[]> {
-    const { data, error } = await supabase
-      .from(TABLES.NETZERO_ALIGNMENT)
-      .select("*")
-      .order("timestamp", { ascending: false })
-      .limit(limit);
+  // Get net-zero alignment records
+  static async getNetZeroAlignmentRecords(): Promise<NetZeroAlignmentRecord[]> {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.NETZERO_ALIGNMENT)
+        .select("*")
+        .order("recorded_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching net zero alignment records:", error);
-      return [];
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching net-zero alignment records:", error);
+      throw error;
     }
-
-    return data || [];
   }
 
   // Real-time subscriptions
@@ -145,6 +141,17 @@ export class DataService {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: TABLES.POWER_PLANTS },
+        callback
+      )
+      .subscribe();
+  }
+
+  static subscribeToEUETSReports(callback: (payload: any) => void) {
+    return supabase
+      .channel("eu_ets_reports_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: TABLES.EU_ETS_REPORTS },
         callback
       )
       .subscribe();
@@ -161,12 +168,23 @@ export class DataService {
       .subscribe();
   }
 
-  static subscribeToEUETSReports(callback: (payload: any) => void) {
+  static subscribeToGenerationMix(callback: (payload: any) => void) {
     return supabase
-      .channel("eu_ets_reports_changes")
+      .channel("generation_mix_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: TABLES.EU_ETS_REPORTS },
+        { event: "*", schema: "public", table: TABLES.GENERATION_MIX },
+        callback
+      )
+      .subscribe();
+  }
+
+  static subscribeToNetZeroAlignment(callback: (payload: any) => void) {
+    return supabase
+      .channel("netzero_alignment_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: TABLES.NETZERO_ALIGNMENT },
         callback
       )
       .subscribe();

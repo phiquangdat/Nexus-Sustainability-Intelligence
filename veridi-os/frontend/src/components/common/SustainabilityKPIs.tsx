@@ -1,5 +1,9 @@
 import React from 'react';
-import type { Co2IntensityRecord, GenerationMixRecord, NetZeroAlignmentRecord } from '../types';
+import type {
+  Co2IntensityRecord,
+  GenerationMixRecord,
+  NetZeroAlignmentRecord,
+} from "../../types";
 
 interface SustainabilityKPIsProps {
   co2Data: Co2IntensityRecord[];

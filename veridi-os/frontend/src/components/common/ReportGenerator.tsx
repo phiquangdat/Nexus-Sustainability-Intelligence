@@ -40,7 +40,7 @@ const ReportGenerator = () => {
             >
               {loading ? (
                 <>
-                  <LoadingSpinner size="sm" color="white" />
+                  <LoadingSpinner size="sm" variant="white" />
                   <span className="ml-2">Generating Report...</span>
                 </>
               ) : (

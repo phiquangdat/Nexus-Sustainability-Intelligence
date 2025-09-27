@@ -35,7 +35,15 @@ const NetZeroPage: React.FC = () => {
       const analysis = await AnalysisService.getNetZeroAnalysis();
       const netZeroData = analysis.records || [];
 
-      setData(netZeroData);
+      // Transform NetZeroAlignmentRecord to NetZeroData
+      const transformedData: NetZeroData[] = netZeroData.map((record) => ({
+        year: new Date(record.recorded_at).getFullYear(),
+        actual_emissions_mt: record.actual_emissions_mt || 0,
+        target_emissions_mt: record.target_emissions_mt || 0,
+        alignment_pct: record.alignment_score || 0,
+      }));
+
+      setData(transformedData);
     } catch (err) {
       console.error("Error loading net-zero data:", err);
       setError("Failed to load net-zero alignment data");

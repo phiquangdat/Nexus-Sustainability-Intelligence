@@ -7,6 +7,11 @@ interface GoalTrackerResult {
   renewableTargetProgress: number;
   netZeroAlignment: number;
   overallProgress: number;
+  rai_pct?: number;
+  budget?: any;
+  velocity?: any;
+  pathway?: any;
+  error?: string;
 }
 
 interface GoalTrackerProps {
@@ -38,10 +43,14 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
 
       // Create a simple goal tracker result
       const result = {
-        co2ReductionProgress: co2Data.length > 0 ? Math.min(100, (co2Data[0].co2_intensity / 1000) * 100) : 0,
-        renewableTargetProgress: genData.length > 0 ? genData[0].renewable_percentage : 0,
+        co2ReductionProgress:
+          co2Data.length > 0
+            ? Math.min(100, (co2Data[0].co2_intensity / 1000) * 100)
+            : 0,
+        renewableTargetProgress:
+          genData.length > 0 ? genData[0].renewable_percentage : 0,
         netZeroAlignment: nzData.length > 0 ? nzData[0].alignment_score : 0,
-        overallProgress: 0
+        overallProgress: 0,
       };
       setGoalTrackerData(result);
     } catch (err) {

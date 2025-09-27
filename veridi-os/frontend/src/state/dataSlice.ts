@@ -5,7 +5,7 @@ import { DataService } from "../services/dataService";
 
 // Define the state interface
 interface DataState {
-  powerPlantData: PowerPlantData[];
+  powerPlantData: PowerPlantSummary[];
   powerPlants: PowerPlantSummary[];
   loading: boolean;
   error: string | null;
@@ -95,7 +95,7 @@ const dataSlice = createSlice({
       action: PayloadAction<{ id: string; data: PowerPlantData }>
     ) => {
       const { id, data } = action.payload;
-      const index = state.powerPlantData.findIndex(item => item.id === id);
+      const index = state.powerPlantData.findIndex((item) => item.id === id);
       if (index !== -1) {
         state.powerPlantData[index] = data;
       }
@@ -107,7 +107,7 @@ const dataSlice = createSlice({
     // Remove data point
     removeDataPoint: (state, action: PayloadAction<string>) => {
       state.powerPlantData = state.powerPlantData.filter(
-        item => item.id !== action.payload
+        (item) => item.id !== action.payload
       );
     },
   },
@@ -152,17 +152,12 @@ const dataSlice = createSlice({
         // Convert recent emissions to power plant data format
         const convertedData = action.payload.map((emission: any) => ({
           id: `${emission.plant_name}-${emission.timestamp}`,
-          plant_id: emission.plant_name,
-          timestamp: emission.timestamp,
-          fuel_consumed_liters: emission.fuel_consumed_liters,
-          energy_output_mwh: emission.energy_output_mwh,
-          co2_emissions_tonnes: emission.co2_emissions_tonnes,
+          name: emission.plant_name,
+          region: emission.region || "Unknown",
+          fuel_type: emission.fuel_type,
+          capacity_mw: emission.capacity_mw || 0,
+          status: emission.status || "Active",
           created_at: emission.timestamp,
-          power_plants: {
-            id: emission.plant_name,
-            name: emission.plant_name,
-            fuel_type: emission.fuel_type,
-          },
         }));
         state.powerPlantData = [...convertedData, ...state.powerPlantData];
         state.error = null;
@@ -175,8 +170,13 @@ const dataSlice = createSlice({
 });
 
 // Export actions
-export const { clearError, resetData, updateDataPoint, addDataPoint, removeDataPoint } =
-  dataSlice.actions;
+export const {
+  clearError,
+  resetData,
+  updateDataPoint,
+  addDataPoint,
+  removeDataPoint,
+} = dataSlice.actions;
 
 // Export selectors
 export const selectPowerPlantData = (state: { data: DataState }) =>
@@ -195,14 +195,17 @@ export const selectDataSummary = (state: { data: DataState }) => {
   return {
     totalPoints: data.length,
     totalEnergy: data.reduce((sum, item) => sum + item.energy_output_mwh, 0),
-    totalEmissions: data.reduce((sum, item) => sum + item.co2_emissions_tonnes, 0),
-    uniquePlants: new Set(data.map(item => item.plant_id)).size,
+    totalEmissions: data.reduce(
+      (sum, item) => sum + item.co2_emissions_tonnes,
+      0
+    ),
+    uniquePlants: new Set(data.map((item) => item.plant_id)).size,
   };
 };
 
 export const selectChartData = (state: { data: DataState }) => {
   const data = state.data.powerPlantData;
-  return data.map(item => ({
+  return data.map((item) => ({
     timestamp: new Date(item.timestamp).toLocaleTimeString(),
     emissions: item.co2_emissions_tonnes,
     plant: item.power_plants?.name || item.plant_id,
