@@ -47,23 +47,28 @@ const LazyChart = ({ data, type, title, height = 300 }: LazyChartProps) => {
   }
 
   return (
-    <div 
-      id={`chart-${type}-${title.replace(/\s+/g, '-').toLowerCase()}`}
+    <div
+      id={`chart-${type}-${title.replace(/\s+/g, "-").toLowerCase()}`}
       className="bg-white p-6 rounded-lg shadow-md"
     >
       <h3 className="text-lg font-semibold mb-4">{title}</h3>
       <Suspense fallback={<ChartSkeleton height={height} type={type} />}>
         <div style={{ height: `${height}px` }}>
-          {type === 'line' ? (
-            <LineChart data={data as ChartData[]} width="100%" height="100%">
+          {type === "line" ? (
+            <LineChart data={data as ChartData[]} width={800} height={height}>
               <XAxis dataKey="timestamp" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="emissions" stroke="#ef4444" strokeWidth={2} />
+              <Line
+                type="monotone"
+                dataKey="emissions"
+                stroke="#ef4444"
+                strokeWidth={2}
+              />
             </LineChart>
           ) : (
-            <BarChart data={data as EnergyData[]} width="100%" height="100%">
+            <BarChart data={data as EnergyData[]} width={800} height={height}>
               <XAxis dataKey="plant" />
               <YAxis />
               <Tooltip />

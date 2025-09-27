@@ -13,9 +13,9 @@ import {
 } from "recharts";
 import type { PowerPlantData, ChartData, EnergyData } from "../types";
 import { mockDataService } from "../services/mockDataService";
-import LoadingSpinner from "./LoadingSpinner";
 import ChartSkeleton from "./ChartSkeleton";
 import DataCardSkeleton from "./DataCardSkeleton";
+import AIInsight from "./AIInsight";
 
 const Dashboard = () => {
   const [data, setData] = useState<PowerPlantData[]>([]);
@@ -42,7 +42,11 @@ const Dashboard = () => {
   // Memoize data processing for better performance
   const { co2Data, energyData, summaryData } = useMemo(() => {
     if (!data.length) {
-      return { co2Data: [], energyData: [], summaryData: { totalPoints: 0, totalEnergy: 0, totalEmissions: 0 } };
+      return {
+        co2Data: [],
+        energyData: [],
+        summaryData: { totalPoints: 0, totalEnergy: 0, totalEmissions: 0 },
+      };
     }
 
     const co2Data: ChartData[] = data.map((item) => ({
@@ -67,7 +71,10 @@ const Dashboard = () => {
     const summaryData = {
       totalPoints: data.length,
       totalEnergy: data.reduce((sum, item) => sum + item.energy_output_mwh, 0),
-      totalEmissions: data.reduce((sum, item) => sum + item.co2_emissions_tonnes, 0)
+      totalEmissions: data.reduce(
+        (sum, item) => sum + item.co2_emissions_tonnes,
+        0
+      ),
     };
 
     return { co2Data, energyData, summaryData };
@@ -76,7 +83,9 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Power Plant Dashboard</h2>
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+          Power Plant Dashboard
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ChartSkeleton type="line" />
           <ChartSkeleton type="bar" />
@@ -93,8 +102,18 @@ const Dashboard = () => {
       <div className="container mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <div className="text-red-600 mb-4">
-            <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+            <svg
+              className="w-12 h-12 mx-auto mb-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
             <h3 className="text-lg font-semibold mb-2">Failed to Load Data</h3>
             <p className="text-red-600 mb-4">{error}</p>
@@ -180,6 +199,11 @@ const Dashboard = () => {
             <div className="text-sm text-gray-600">Total CO2 Emissions</div>
           </div>
         </div>
+      </div>
+
+      {/* AI Insight */}
+      <div className="mt-6">
+        <AIInsight />
       </div>
     </div>
   );
