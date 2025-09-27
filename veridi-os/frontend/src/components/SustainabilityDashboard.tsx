@@ -1,30 +1,20 @@
 // Enhanced Sustainability Dashboard - Integrates all modules and Streamlit patterns
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Activity,
-  Zap,
-  Leaf,
-  TrendingDown,
-  Play,
-  Pause,
-  RefreshCw,
-  Info,
-} from "lucide-react";
 
 import { GoalTracker } from "./GoalTracker";
-import { CO2IntensityChart } from "./CO2IntensityChart";
-import { GenerationMixChart } from "./GenerationMixChart";
-import { NetZeroAlignmentChart } from "./NetZeroAlignmentChart";
-import { ScatterChart } from "./ScatterChart";
+import CO2IntensityChart from "./CO2IntensityChart";
+import GenerationMixChart from "./GenerationMixChart";
+import NetZeroAlignmentChart from "./NetZeroAlignmentChart";
+import ScatterChart from "./ScatterChart";
 
-import { supabaseService } from "@/services/supabaseService";
-import { simulatorService } from "@/services/simulatorService";
-import { analysisService } from "@/services/analysisService";
+import { supabaseService } from "../services/supabaseService";
+import { simulatorService } from "../services/simulatorService";
+import type {
+  Co2IntensityRecord,
+  GenerationMixRecord,
+  NetZeroAlignmentRecord,
+  SustainabilityChartData,
+} from "../types";
 
 interface DashboardProps {
   className?: string;
@@ -36,10 +26,22 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
   const [loading, setLoading] = useState(true);
   const [simulatorRunning, setSimulatorRunning] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
   const [kpis, setKpis] = useState({
     co2Intensity: 0,
     renewableShare: 0,
     netZeroAlignment: 0,
+  });
+  const [chartData, setChartData] = useState<{
+    co2Data: Co2IntensityRecord[];
+    genData: GenerationMixRecord[];
+    nzData: NetZeroAlignmentRecord[];
+    scatterData: SustainabilityChartData[];
+  }>({
+    co2Data: [],
+    genData: [],
+    nzData: [],
+    scatterData: [],
   });
 
   useEffect(() => {
@@ -60,9 +62,9 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
 
       // Fetch latest data
       const [co2Data, genData, nzData] = await Promise.all([
-        supabaseService.fetchCo2IntensityData(1),
-        supabaseService.fetchGenerationMixData(1),
-        supabaseService.fetchNetZeroAlignmentData(1),
+        supabaseService.fetchCo2IntensityData(100),
+        supabaseService.fetchGenerationMixData(100),
+        supabaseService.fetchNetZeroAlignmentData(10),
       ]);
 
       // Update KPIs
@@ -86,6 +88,14 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
           netZeroAlignment: nzData[0].alignment_pct,
         }));
       }
+
+      // Update chart data
+      setChartData({
+        co2Data: co2Data.map((item) => ({ ...item, id: item.id || 0 })),
+        genData: genData.map((item) => ({ ...item, id: item.id || 0 })),
+        nzData,
+        scatterData: [], // Will be generated from co2Data and genData
+      });
 
       setLastUpdate(new Date());
     } catch (error) {
@@ -147,137 +157,161 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant={simulatorRunning ? "destructive" : "default"}
+          <button
+            className={`px-4 py-2 rounded font-medium flex items-center gap-2 ${
+              simulatorRunning
+                ? "bg-red-500 hover:bg-red-600 text-white"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
             onClick={toggleSimulator}
-            className="flex items-center gap-2"
           >
-            {simulatorRunning ? (
-              <Pause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
+            <div
+              className={`w-4 h-4 ${
+                simulatorRunning ? "bg-white rounded" : "bg-white rounded"
+              }`}
+            ></div>
             {simulatorRunning ? "Stop Simulator" : "Start Simulator"}
-          </Button>
-          <Button
-            variant="outline"
+          </button>
+          <button
+            className="px-4 py-2 border border-gray-300 rounded font-medium flex items-center gap-2 hover:bg-gray-50"
             onClick={generateTestData}
             disabled={loading}
-            className="flex items-center gap-2"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <div
+              className={`w-4 h-4 ${
+                loading
+                  ? "animate-spin bg-gray-500 rounded"
+                  : "bg-gray-500 rounded"
+              }`}
+            ></div>
             Generate Test Data
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Status Alert */}
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          This prototype demonstrates integrated sustainability metrics for
-          electricity/heat, enabling clear reporting and analysis. Data are
-          simulated for demonstration purposes.
-        </AlertDescription>
-      </Alert>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-blue-500 rounded"></div>
+          <p className="text-blue-800 text-sm">
+            This prototype demonstrates integrated sustainability metrics for
+            electricity/heat, enabling clear reporting and analysis. Data are
+            simulated for demonstration purposes.
+          </p>
+        </div>
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">CO₂ Intensity</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {kpis.co2Intensity.toFixed(1)}
-            </div>
-            <p className="text-xs text-muted-foreground">gCO₂ per kWh</p>
-            <Badge variant="secondary" className="mt-2">
-              <TrendingDown className="h-3 w-3 mr-1" />
-              Lower is better
-            </Badge>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium">CO₂ Intensity</h3>
+            <div className="w-4 h-4 bg-blue-500 rounded"></div>
+          </div>
+          <div className="text-2xl font-bold">
+            {kpis.co2Intensity.toFixed(1)}
+          </div>
+          <p className="text-xs text-gray-500">gCO₂ per kWh</p>
+          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded mt-2">
+            Lower is better
+          </span>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Renewable Share
-            </CardTitle>
-            <Leaf className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {kpis.renewableShare.toFixed(1)}%
-            </div>
-            <p className="text-xs text-muted-foreground">of total generation</p>
-            <Badge variant="default" className="mt-2">
-              <Zap className="h-3 w-3 mr-1" />
-              Higher is better
-            </Badge>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium">Renewable Share</h3>
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
+          </div>
+          <div className="text-2xl font-bold">
+            {kpis.renewableShare.toFixed(1)}%
+          </div>
+          <p className="text-xs text-gray-500">of total generation</p>
+          <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs rounded mt-2">
+            Higher is better
+          </span>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Net-zero Alignment
-            </CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {kpis.netZeroAlignment.toFixed(0)}%
-            </div>
-            <p className="text-xs text-muted-foreground">vs 2050 pathway</p>
-            <Badge
-              variant={kpis.netZeroAlignment >= 100 ? "default" : "destructive"}
-              className="mt-2"
-            >
-              {kpis.netZeroAlignment >= 100 ? "On track" : "Behind"}
-            </Badge>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium">Net-zero Alignment</h3>
+            <div className="w-4 h-4 bg-purple-500 rounded"></div>
+          </div>
+          <div className="text-2xl font-bold">
+            {kpis.netZeroAlignment.toFixed(0)}%
+          </div>
+          <p className="text-xs text-gray-500">vs 2050 pathway</p>
+          <span
+            className={`inline-block px-2 py-1 text-xs rounded mt-2 ${
+              kpis.netZeroAlignment >= 100
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {kpis.netZeroAlignment >= 100 ? "On track" : "Behind"}
+          </span>
+        </div>
       </div>
 
       {/* Goal Tracker */}
       <GoalTracker />
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="co2-intensity">CO₂ Intensity</TabsTrigger>
-          <TabsTrigger value="generation-mix">Generation Mix</TabsTrigger>
-          <TabsTrigger value="net-zero">Net-zero Alignment</TabsTrigger>
-          <TabsTrigger value="scatter">Correlation Analysis</TabsTrigger>
-        </TabsList>
+      <div className="space-y-4">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            {[
+              { id: "overview", label: "Overview" },
+              { id: "co2-intensity", label: "CO₂ Intensity" },
+              { id: "generation-mix", label: "Generation Mix" },
+              { id: "net-zero", label: "Net-zero Alignment" },
+              { id: "scatter", label: "Correlation Analysis" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab.id
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CO2IntensityChart />
-            <GenerationMixChart />
-          </div>
-          <NetZeroAlignmentChart />
-        </TabsContent>
+        <div className="space-y-6">
+          {activeTab === "overview" && (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CO2IntensityChart data={chartData.co2Data} loading={loading} />
+                <GenerationMixChart
+                  data={chartData.genData}
+                  loading={loading}
+                />
+              </div>
+              <NetZeroAlignmentChart
+                data={chartData.nzData}
+                loading={loading}
+              />
+            </>
+          )}
 
-        <TabsContent value="co2-intensity">
-          <CO2IntensityChart />
-        </TabsContent>
-
-        <TabsContent value="generation-mix">
-          <GenerationMixChart />
-        </TabsContent>
-
-        <TabsContent value="net-zero">
-          <NetZeroAlignmentChart />
-        </TabsContent>
-
-        <TabsContent value="scatter">
-          <ScatterChart />
-        </TabsContent>
-      </Tabs>
+          {activeTab === "co2-intensity" && (
+            <CO2IntensityChart data={chartData.co2Data} loading={loading} />
+          )}
+          {activeTab === "generation-mix" && (
+            <GenerationMixChart data={chartData.genData} loading={loading} />
+          )}
+          {activeTab === "net-zero" && (
+            <NetZeroAlignmentChart data={chartData.nzData} loading={loading} />
+          )}
+          {activeTab === "scatter" && (
+            <ScatterChart data={chartData.scatterData} loading={loading} />
+          )}
+        </div>
+      </div>
 
       {/* Footer */}
       <div className="text-center text-sm text-gray-500">

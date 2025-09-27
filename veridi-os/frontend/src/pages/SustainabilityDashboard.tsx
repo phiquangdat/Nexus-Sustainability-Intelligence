@@ -3,12 +3,11 @@ import SustainabilityKPIs from '../components/SustainabilityKPIs';
 import GoalTrackerComponent from '../components/GoalTracker';
 import CO2IntensityChart from '../components/CO2IntensityChart';
 import GenerationMixChart from '../components/GenerationMixChart';
-import type { 
-  Co2IntensityRecord, 
-  GenerationMixRecord, 
-  NetZeroAlignmentRecord, 
-  GoalTracker 
-} from '../types';
+import type {
+  Co2IntensityRecord,
+  GenerationMixRecord,
+  NetZeroAlignmentRecord,
+} from "../types";
 
 const SustainabilityDashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'24h' | '7d'>('24h');
@@ -44,32 +43,6 @@ const SustainabilityDashboard: React.FC = () => {
     { year: 2024, actual_emissions_mt: 32.8, target_emissions_mt: 36.0, alignment_pct: 109.8 },
   ];
 
-  const mockGoalTracker: GoalTracker = {
-    rai_pct: 108.5,
-    budget: {
-      ytd_tons: 1250000,
-      ytd_budget_tons: 1400000,
-      days_ahead: 12.5
-    },
-    velocity: {
-      v_actual_g_per_kwh_per_yr: 15.2,
-      v_required_g_per_kwh_per_yr: 12.8,
-      on_track: true
-    },
-    pathway: {
-      eta_year: 2048,
-      series: [
-        { year: 2024, target_emissions_mt: 36.0 },
-        { year: 2025, target_emissions_mt: 33.0 },
-        { year: 2030, target_emissions_mt: 25.0 },
-        { year: 2035, target_emissions_mt: 15.0 },
-        { year: 2040, target_emissions_mt: 8.0 },
-        { year: 2045, target_emissions_mt: 3.0 },
-        { year: 2050, target_emissions_mt: 0.0 }
-      ]
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -79,19 +52,22 @@ const SustainabilityDashboard: React.FC = () => {
             Sustainability Intelligence Dashboard
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl">
-            Real-time sustainability metrics for electricity & heat sector. This prototype addresses the WISE 
-            Sustainability Intelligence challenge with integrated metrics supporting reporting, analysis, and 
-            progress toward net-zero by 2050 (IPCC 1.5°C).
+            Real-time sustainability metrics for electricity & heat sector. This
+            prototype addresses the WISE Sustainability Intelligence challenge
+            with integrated metrics supporting reporting, analysis, and progress
+            toward net-zero by 2050 (IPCC 1.5°C).
           </p>
         </div>
 
         {/* Time Range Selector */}
         <div className="mb-6">
           <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">Time Range:</label>
+            <label className="text-sm font-medium text-gray-700">
+              Time Range:
+            </label>
             <select
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as '24h' | '7d')}
+              onChange={(e) => setTimeRange(e.target.value as "24h" | "7d")}
               className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Select time range"
             >
@@ -102,7 +78,7 @@ const SustainabilityDashboard: React.FC = () => {
         </div>
 
         {/* KPI Cards */}
-        <SustainabilityKPIs 
+        <SustainabilityKPIs
           co2Data={mockCo2Data}
           generationData={mockGenerationData}
           netZeroData={mockNetZeroData}
@@ -110,7 +86,7 @@ const SustainabilityDashboard: React.FC = () => {
 
         {/* Goal Tracker */}
         <div className="mb-8">
-          <GoalTrackerComponent data={mockGoalTracker} />
+          <GoalTrackerComponent />
         </div>
 
         {/* Charts Grid */}
@@ -122,7 +98,10 @@ const SustainabilityDashboard: React.FC = () => {
 
           {/* Generation Mix Chart */}
           <div>
-            <GenerationMixChart data={mockGenerationData} showCurrentMix={false} />
+            <GenerationMixChart
+              data={mockGenerationData}
+              showCurrentMix={false}
+            />
           </div>
         </div>
 
@@ -133,20 +112,23 @@ const SustainabilityDashboard: React.FC = () => {
 
         {/* About Section */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-blue-900 mb-3">About This Prototype</h2>
+          <h2 className="text-lg font-semibold text-blue-900 mb-3">
+            About This Prototype
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold text-blue-800 mb-2">Objective</h3>
               <p className="text-sm text-blue-700">
-                Integrate sustainability metrics for electricity/heat, enabling clear reporting and analysis 
-                to support CSRD/ESRS disclosures and operational MRV (EU ETS).
+                Integrate sustainability metrics for electricity/heat, enabling
+                clear reporting and analysis to support CSRD/ESRS disclosures
+                and operational MRV (EU ETS).
               </p>
             </div>
             <div>
               <h3 className="font-semibold text-blue-800 mb-2">Status</h3>
               <p className="text-sm text-blue-700">
-                Simulated data for demonstration. Architecture supports scaling to live sources and APIs 
-                for production deployment.
+                Simulated data for demonstration. Architecture supports scaling
+                to live sources and APIs for production deployment.
               </p>
             </div>
           </div>
@@ -155,12 +137,21 @@ const SustainabilityDashboard: React.FC = () => {
         {/* Data Note */}
         <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex">
-            <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            <svg
+              className="w-5 h-5 text-yellow-400 mt-0.5 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
             <p className="text-sm text-yellow-800">
-              <strong>Prototype Note:</strong> Data are simulated to demonstrate flows and visuals. 
-              In production, data integrate from plant SCADA, fuel/efficiency logs, and emissions inventories.
+              <strong>Prototype Note:</strong> Data are simulated to demonstrate
+              flows and visuals. In production, data integrate from plant SCADA,
+              fuel/efficiency logs, and emissions inventories.
             </p>
           </div>
         </div>

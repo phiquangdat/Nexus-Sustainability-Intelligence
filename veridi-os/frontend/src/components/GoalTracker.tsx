@@ -1,14 +1,10 @@
 // Enhanced Goal Tracker Component - Integrates Streamlit Home.py goal tracking functionality
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   analysisService,
   type GoalTrackerResult,
-} from "@/services/analysisService";
-import { supabaseService } from "@/services/supabaseService";
-import { AlertCircle, TrendingUp, Calendar, Target } from "lucide-react";
+} from "../services/analysisService";
+import { supabaseService } from "../services/supabaseService";
 
 interface GoalTrackerProps {
   className?: string;
@@ -54,72 +50,66 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
+      <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-5 h-5 bg-blue-500 rounded"></div>
+          <h3 className="text-lg font-semibold">
             Goal Tracker (1.5°C / Net-zero 2050)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-          </div>
-        </CardContent>
-      </Card>
+          </h3>
+        </div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
+      <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-5 h-5 bg-blue-500 rounded"></div>
+          <h3 className="text-lg font-semibold">
             Goal Tracker (1.5°C / Net-zero 2050)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-red-600">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-sm">{error}</span>
-          </div>
-        </CardContent>
-      </Card>
+          </h3>
+        </div>
+        <div className="flex items-center gap-2 text-red-600">
+          <div className="w-4 h-4 bg-red-500 rounded"></div>
+          <span className="text-sm">{error}</span>
+        </div>
+      </div>
     );
   }
 
   if (!goalTrackerData || goalTrackerData.error) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
+      <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-5 h-5 bg-blue-500 rounded"></div>
+          <h3 className="text-lg font-semibold">
             Goal Tracker (1.5°C / Net-zero 2050)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-gray-500 text-sm">
-            Insufficient data for goal tracking analysis
-          </div>
-        </CardContent>
-      </Card>
+          </h3>
+        </div>
+        <div className="text-gray-500 text-sm">
+          Insufficient data for goal tracking analysis
+        </div>
+      </div>
     );
   }
 
   const { rai_pct, budget, velocity, pathway } = goalTrackerData;
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5" />
+    <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-5 h-5 bg-blue-500 rounded"></div>
+        <h3 className="text-lg font-semibold">
           Goal Tracker (1.5°C / Net-zero 2050)
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </h3>
+      </div>
+      <div className="space-y-6">
         {/* Real-time Alignment Index */}
         {rai_pct !== undefined && (
           <div className="space-y-2">
@@ -127,11 +117,23 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
               <span className="text-sm font-medium">
                 Real-time Alignment Index
               </span>
-              <Badge variant={rai_pct >= 100 ? "default" : "destructive"}>
+              <span
+                className={`px-2 py-1 rounded text-xs font-medium ${
+                  rai_pct >= 100
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
                 {rai_pct}%
-              </Badge>
+              </span>
             </div>
-            <Progress value={Math.min(100, rai_pct)} className="h-2" />
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  rai_pct >= 100 ? "bg-green-500 w-full" : "bg-red-500 w-3/4"
+                }`}
+              ></div>
+            </div>
             <p className="text-xs text-gray-600">
               Target intensity vs current intensity. 100% means on target.
             </p>
@@ -144,7 +146,7 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">YTD Carbon Budget</span>
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+                <div className="w-4 h-4 bg-blue-500 rounded"></div>
                 <span className="text-sm font-medium">
                   {budget.days_ahead > 0 ? "+" : ""}
                   {budget.days_ahead} days
@@ -178,9 +180,15 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
               <span className="text-sm font-medium">
                 Decarbonization Velocity
               </span>
-              <Badge variant={velocity.on_track ? "default" : "destructive"}>
+              <span
+                className={`px-2 py-1 rounded text-xs font-medium ${
+                  velocity.on_track
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
                 {velocity.on_track ? "On track" : "Behind"}
-              </Badge>
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -207,7 +215,7 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
         {pathway && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
+              <div className="w-4 h-4 bg-green-500 rounded"></div>
               <span className="text-sm font-medium">2050 Pathway</span>
             </div>
             {pathway.eta_year && (
@@ -242,8 +250,8 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
             </p>
           </div>
         </details>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
