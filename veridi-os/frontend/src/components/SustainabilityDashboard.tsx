@@ -7,8 +7,7 @@ import GenerationMixChart from "./GenerationMixChart";
 import NetZeroAlignmentChart from "./NetZeroAlignmentChart";
 import ScatterChart from "./ScatterChart";
 
-import { supabaseService } from "../services/supabaseService";
-import { simulatorService } from "../services/simulatorService";
+import { analysisService } from "../services/analysisService";
 import type {
   Co2IntensityRecord,
   GenerationMixRecord,
@@ -60,12 +59,13 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
     try {
       setLoading(true);
 
-      // Fetch latest data
-      const [co2Data, genData, nzData] = await Promise.all([
-        supabaseService.fetchCo2IntensityData(100),
-        supabaseService.fetchGenerationMixData(100),
-        supabaseService.fetchNetZeroAlignmentData(10),
-      ]);
+      // Fetch comprehensive analysis from backend
+      const analysis = await analysisService.getAnalysis(100);
+
+      // Extract data from analysis response
+      const co2Data = analysis.rawData.co2 || [];
+      const genData = analysis.rawData.generation_mix || [];
+      const nzData = analysis.rawData.netzero_alignment || [];
 
       // Update KPIs
       if (co2Data.length > 0) {
@@ -106,15 +106,23 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
   };
 
   const checkSimulatorStatus = () => {
-    setSimulatorRunning(simulatorService.isSimulatorRunning());
+    // Simulator status is now managed by backend
+    setSimulatorRunning(false);
   };
 
   const toggleSimulator = async () => {
     try {
+      // Use backend API for simulator control
       if (simulatorRunning) {
-        simulatorService.stopContinuous();
+        // Stop continuous simulation
+        await fetch("http://localhost:4000/api/simulator/stop-continuous", {
+          method: "POST",
+        });
       } else {
-        await simulatorService.startContinuous();
+        // Start continuous simulation
+        await fetch("http://localhost:4000/api/simulator/start-continuous", {
+          method: "POST",
+        });
       }
       setSimulatorRunning(!simulatorRunning);
     } catch (error) {
@@ -125,15 +133,12 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
   const generateTestData = async () => {
     try {
       setLoading(true);
-      const { co2Data, genData, nzData } =
-        await simulatorService.generateHistoricalData(24);
-
-      // Insert test data into Supabase
-      if (supabaseService.isEnabled()) {
-        await supabaseService.insertCo2IntensityData(co2Data);
-        await supabaseService.insertGenerationMixData(genData);
-        await supabaseService.insertNetZeroAlignmentData(nzData);
-      }
+      // Use backend API to generate historical data
+      await fetch("http://localhost:4000/api/simulator/generate-historical", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hours: 24 }),
+      });
 
       await loadDashboardData();
     } catch (error) {
@@ -317,7 +322,7 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
       <div className="text-center text-sm text-gray-500">
         Last updated: {lastUpdate ? lastUpdate.toLocaleString() : "Never"} |
         Simulator: {simulatorRunning ? "Running" : "Stopped"} | Data source:{" "}
-        {supabaseService.isEnabled() ? "Supabase" : "Mock"}
+        {"Mock Data"}
       </div>
     </div>
   );

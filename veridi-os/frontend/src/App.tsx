@@ -25,8 +25,7 @@ function App() {
               path="/"
               element={
                 <ErrorBoundary>
-                  <Dashboard />
-                  <ReportGenerator />
+                  <ComprehensiveSustainabilityDashboard />
                 </ErrorBoundary>
               }
             />
@@ -99,6 +98,15 @@ function App() {
               element={
                 <ErrorBoundary>
                   <ComprehensiveSustainabilityDashboard />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/power-plants"
+              element={
+                <ErrorBoundary>
+                  <Dashboard />
+                  <ReportGenerator />
                 </ErrorBoundary>
               }
             />
