@@ -150,15 +150,17 @@ const dataSlice = createSlice({
       .addCase(fetchRecentEmissions.fulfilled, (state, action) => {
         state.loading = false;
         // Convert recent emissions to power plant data format
-        const convertedData = action.payload.map((emission: any) => ({
-          id: `${emission.plant_name}-${emission.timestamp}`,
-          name: emission.plant_name,
-          region: emission.region || "Unknown",
-          fuel_type: emission.fuel_type,
-          capacity_mw: emission.capacity_mw || 0,
-          status: emission.status || "Active",
-          created_at: emission.timestamp,
-        }));
+        const convertedData = action.payload.map(
+          (emission: Record<string, unknown>) => ({
+            id: `${emission.plant_name}-${emission.timestamp}`,
+            name: emission.plant_name,
+            region: emission.region || "Unknown",
+            fuel_type: emission.fuel_type,
+            capacity_mw: emission.capacity_mw || 0,
+            status: emission.status || "Active",
+            created_at: emission.timestamp,
+          })
+        );
         state.powerPlantData = [...convertedData, ...state.powerPlantData];
         state.error = null;
       })

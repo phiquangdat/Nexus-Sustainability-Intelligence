@@ -8,9 +8,22 @@ interface GoalTrackerResult {
   netZeroAlignment: number;
   overallProgress: number;
   rai_pct?: number;
-  budget?: any;
-  velocity?: any;
-  pathway?: any;
+  budget?: {
+    ytd_emissions: number;
+    annual_budget: number;
+    remaining_budget: number;
+  };
+  velocity?: {
+    current_velocity: number;
+    required_velocity: number;
+    velocity_gap: number;
+  };
+  pathway?: {
+    target_year: number;
+    current_year: number;
+    years_remaining: number;
+    eta: string;
+  };
   error?: string;
 }
 

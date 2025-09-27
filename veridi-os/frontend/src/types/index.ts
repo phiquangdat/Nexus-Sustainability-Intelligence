@@ -85,7 +85,7 @@ export interface SustainabilityChartData {
 }
 
 export interface ChartDataInput {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface GenerationMixData {

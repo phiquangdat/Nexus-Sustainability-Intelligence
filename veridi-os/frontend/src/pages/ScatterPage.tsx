@@ -35,7 +35,13 @@ const ScatterPage: React.FC = () => {
     }
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ payload: ScatterData }>;
+  }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

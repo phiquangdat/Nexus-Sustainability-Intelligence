@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useState, useCallback } from "react";
 import type { ReactNode } from "react";
 import { cn } from "../../utils/helpers";
 
@@ -57,13 +57,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error("useToast must be used within a ToastProvider");
-  }
-  return context;
-};
+// useToast is now imported from ToastContext.ts
 
 const ToastContainer: React.FC = () => {
   const { toasts } = useToast();

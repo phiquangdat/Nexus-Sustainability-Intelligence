@@ -18,7 +18,9 @@ export const usePerformance = (componentName: string) => {
       const componentMountTime = performance.now() - mountTimeRef.current;
 
       // Get memory usage if available
-      const memoryUsage = (performance as any).memory?.usedJSHeapSize;
+      const memoryUsage = (
+        performance as Performance & { memory?: { usedJSHeapSize?: number } }
+      ).memory?.usedJSHeapSize;
 
       setMetrics({
         renderTime: renderStartRef.current

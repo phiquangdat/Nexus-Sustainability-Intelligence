@@ -6,14 +6,14 @@ interface LazyComponentProps {
   fallback?: React.ReactNode;
 }
 
-export const LazyWrapper: React.FC<LazyComponentProps> = ({
+export const LazyWrapper = ({
   children,
   fallback = <LoadingSpinner size="lg" text="Loading component..." />,
-}) => {
+}: LazyComponentProps) => {
   return <Suspense fallback={fallback}>{children}</Suspense>;
 };
 
-export const withLazyLoading = <P extends object>(
+export const withLazyLoading = <P extends Record<string, unknown>>(
   Component: React.ComponentType<P>,
   fallback?: React.ReactNode
 ) => {

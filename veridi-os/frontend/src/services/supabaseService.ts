@@ -1,4 +1,9 @@
-import { supabase, TABLES } from "../lib/supabase";
+import {
+  supabase,
+  TABLES,
+  isSupabaseConfigured,
+  testSupabaseConnection,
+} from "../lib/supabase";
 import type {
   PowerPlantSummary,
   EUETSReport,
@@ -8,7 +13,15 @@ import type {
   NetZeroAlignmentRecord,
 } from "../types";
 
-export class DataService {
+export class SupabaseService {
+  // Check if Supabase is available and configured
+  static async isAvailable(): Promise<boolean> {
+    if (!isSupabaseConfigured()) {
+      return false;
+    }
+    return await testSupabaseConnection();
+  }
+
   // Get all power plants
   static async getPowerPlants(): Promise<PowerPlantSummary[]> {
     try {
@@ -189,4 +202,62 @@ export class DataService {
       )
       .subscribe();
   }
+
+  // Utility methods for data management
+  static async insertCo2IntensityRecord(
+    record: Omit<Co2IntensityRecord, "id" | "recorded_at">
+  ) {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.CO2_INTENSITY)
+        .insert([{ ...record, recorded_at: new Date().toISOString() }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error inserting CO2 intensity record:", error);
+      throw error;
+    }
+  }
+
+  static async insertGenerationMixRecord(
+    record: Omit<GenerationMixRecord, "id" | "recorded_at">
+  ) {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.GENERATION_MIX)
+        .insert([{ ...record, recorded_at: new Date().toISOString() }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error inserting generation mix record:", error);
+      throw error;
+    }
+  }
+
+  static async insertNetZeroAlignmentRecord(
+    record: Omit<NetZeroAlignmentRecord, "id" | "recorded_at">
+  ) {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.NETZERO_ALIGNMENT)
+        .insert([{ ...record, recorded_at: new Date().toISOString() }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error inserting net-zero alignment record:", error);
+      throw error;
+    }
+  }
 }
+
+// Export singleton instance
+export const supabaseService = new SupabaseService();

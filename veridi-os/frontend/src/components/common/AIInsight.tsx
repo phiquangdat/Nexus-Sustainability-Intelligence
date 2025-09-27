@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface AIInsightData {
   id: string;
@@ -17,44 +17,47 @@ const AIInsight = () => {
   );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const insights: AIInsightData[] = [
-    {
-      id: "1",
-      title: "Predictive Alert & Recommendation",
-      alert:
-        "Based on current operational data and forecasted demand, we predict a 75% chance of exceeding your weekly CO₂ emissions allowance in 48 hours.",
-      recommendation:
-        "Advise shifting 10% of energy load from Plant A (HFO) to Plant C (Natural Gas) between 8 PM and 11 PM to remain compliant and save an estimated €12,000 in carbon credits.",
-      confidence: 87,
-      impact: "high",
-      category: "emissions",
-      timestamp: new Date(),
-    },
-    {
-      id: "2",
-      title: "Efficiency Optimization Opportunity",
-      alert:
-        "Plant B is operating at 15% below optimal efficiency during peak hours (2-4 PM).",
-      recommendation:
-        "Adjust fuel-air ratio and increase maintenance frequency to improve efficiency by 8% and reduce operational costs by €3,500 monthly.",
-      confidence: 92,
-      impact: "medium",
-      category: "efficiency",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    },
-    {
-      id: "3",
-      title: "Cost Reduction Alert",
-      alert:
-        "Current fuel mix is 20% more expensive than optimal configuration for current demand patterns.",
-      recommendation:
-        "Switch to 70% Natural Gas / 30% HFO ratio during off-peak hours to reduce fuel costs by €8,200 per week while maintaining output.",
-      confidence: 78,
-      impact: "high",
-      category: "cost",
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    },
-  ];
+  const insights: AIInsightData[] = useMemo(
+    () => [
+      {
+        id: "1",
+        title: "Predictive Alert & Recommendation",
+        alert:
+          "Based on current operational data and forecasted demand, we predict a 75% chance of exceeding your weekly CO₂ emissions allowance in 48 hours.",
+        recommendation:
+          "Advise shifting 10% of energy load from Plant A (HFO) to Plant C (Natural Gas) between 8 PM and 11 PM to remain compliant and save an estimated €12,000 in carbon credits.",
+        confidence: 87,
+        impact: "high",
+        category: "emissions",
+        timestamp: new Date(),
+      },
+      {
+        id: "2",
+        title: "Efficiency Optimization Opportunity",
+        alert:
+          "Plant B is operating at 15% below optimal efficiency during peak hours (2-4 PM).",
+        recommendation:
+          "Adjust fuel-air ratio and increase maintenance frequency to improve efficiency by 8% and reduce operational costs by €3,500 monthly.",
+        confidence: 92,
+        impact: "medium",
+        category: "efficiency",
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      },
+      {
+        id: "3",
+        title: "Cost Reduction Alert",
+        alert:
+          "Current fuel mix is 20% more expensive than optimal configuration for current demand patterns.",
+        recommendation:
+          "Switch to 70% Natural Gas / 30% HFO ratio during off-peak hours to reduce fuel costs by €8,200 per week while maintaining output.",
+        confidence: 78,
+        impact: "high",
+        category: "cost",
+        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
+      },
+    ],
+    []
+  );
 
   useEffect(() => {
     // Set initial insight
@@ -72,7 +75,7 @@ const AIInsight = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [insights]);
 
   const getImpactColor = (impact: string) => {
     switch (impact) {

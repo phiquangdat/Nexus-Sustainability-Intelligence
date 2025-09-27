@@ -33,11 +33,7 @@ export class AnalysisService {
         generationMixRecords,
         netZeroRecords,
         summary: this.calculateSummary(powerPlants),
-        insights: this.generateInsights(
-          powerPlants,
-          scatterData,
-          netZeroRecords
-        ),
+        insights: this.generateInsights(powerPlants, scatterData),
       };
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -94,8 +90,7 @@ export class AnalysisService {
   // Generate insights based on data
   private static generateInsights(
     powerPlants: PowerPlantData[],
-    scatterData: ScatterData[],
-    _netZeroRecords: NetZeroAlignmentRecord[]
+    scatterData: ScatterData[]
   ): string[] {
     const insights: string[] = [];
 

@@ -13,7 +13,7 @@ const MockDataToggle = () => {
           .select("count")
           .limit(1);
         setSupabaseConnected(!error);
-      } catch (err) {
+      } catch {
         setSupabaseConnected(false);
       }
     };
