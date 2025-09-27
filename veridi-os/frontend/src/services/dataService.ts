@@ -1,111 +1,104 @@
-// Fallback service for when Supabase is not configured
-import { mockDataService } from './mockDataService';
+import axios from "axios";
+import {
+  mockPowerPlantData,
+  mockEUETSReport,
+  generateMockData,
+} from "../mockData";
 import type { PowerPlantData, EUETSReport } from "../types";
 
-// Check if Supabase is configured
-const isSupabaseConfigured = () => {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  return url && key && url !== 'your_supabase_project_url_here' && key !== 'your_supabase_anon_key_here';
-};
+// Configuration for mock data usage
+const USE_MOCK_DATA =
+  import.meta.env.VITE_USE_MOCK_DATA === "true" ||
+  import.meta.env.NODE_ENV === "development";
 
-// Fallback service that uses mock data when Supabase is not available
-export const dataService = {
-  async getPowerPlantData(): Promise<PowerPlantData[]> {
-    if (isSupabaseConfigured()) {
-      try {
-        // Try to import Supabase dynamically
-        const supabaseModule = await import("../lib/supabase").catch(
-          () => null
-        );
-        if (supabaseModule?.supabaseHelpers) {
-          return await supabaseModule.supabaseHelpers.getAllPowerPlantData(
-            1000
-          );
-        }
-        throw new Error("Supabase module not available");
-      } catch (error) {
-        console.warn(
-          "Supabase not available, falling back to mock data:",
-          error
-        );
-        return await mockDataService.getPowerPlantData();
-      }
-    } else {
-      console.log("Supabase not configured, using mock data");
-      return await mockDataService.getPowerPlantData();
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+// This service can switch between a real API and mock data
+export class DataService {
+  private static instance: DataService;
+  private useMockData: boolean;
+
+  constructor(useMockData: boolean = USE_MOCK_DATA) {
+    this.useMockData = useMockData;
+  }
+
+  static getInstance(): DataService {
+    if (!DataService.instance) {
+      DataService.instance = new DataService();
     }
-  },
+    return DataService.instance;
+  }
+
+  setUseMockData(useMock: boolean): void {
+    this.useMockData = useMock;
+  }
+
+  async getPowerPlantData(): Promise<PowerPlantData[]> {
+    if (this.useMockData) {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return mockPowerPlantData;
+    }
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/data`);
+      return response.data;
+    } catch (error) {
+      console.warn("API call failed, falling back to mock data:", error);
+      return mockPowerPlantData;
+    }
+  }
 
   async getEUETSReport(): Promise<EUETSReport> {
-    if (isSupabaseConfigured()) {
-      try {
-        // Try to import Supabase dynamically
-        const supabaseModule = await import("../lib/supabase").catch(
-          () => null
-        );
-        if (supabaseModule?.supabaseHelpers && supabaseModule?.typedSupabase) {
-          // Calculate emissions from database
-          const { data: emissionsData } = await supabaseModule.typedSupabase
-            .from("power_plant_data")
-            .select("co2_emissions_tonnes")
-            .gte("timestamp", "2024-07-01")
-            .lt("timestamp", "2024-10-01");
-
-          const totalEmissions =
-            emissionsData?.reduce(
-              (sum: number, record: any) => sum + record.co2_emissions_tonnes,
-              0
-            ) || 0;
-
-          const reportData = {
-            reporting_period: "Q3 2024",
-            total_emissions_tonnes: Math.round(totalEmissions * 100) / 100,
-            status: (totalEmissions < 20000 ? "Compliant" : "Non-Compliant") as
-              | "Compliant"
-              | "Non-Compliant",
-            generated_at: new Date().toISOString(),
-          };
-
-          return await supabaseModule.supabaseHelpers.generateEUETSReport(
-            reportData
-          );
-        }
-        throw new Error("Supabase module not available");
-      } catch (error) {
-        console.warn(
-          "Supabase not available, falling back to mock data:",
-          error
-        );
-        return await mockDataService.getEUETSReport();
-      }
-    } else {
-      console.log("Supabase not configured, using mock data");
-      return await mockDataService.getEUETSReport();
+    if (this.useMockData) {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return mockEUETSReport;
     }
-  },
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/reports/eu-ets`);
+      return response.data;
+    } catch (error) {
+      console.warn("API call failed, falling back to mock data:", error);
+      return mockEUETSReport;
+    }
+  }
 
   async getEUETSReports(): Promise<EUETSReport[]> {
-    if (isSupabaseConfigured()) {
-      try {
-        // Try to import Supabase dynamically
-        const supabaseModule = await import("../lib/supabase").catch(
-          () => null
-        );
-        if (supabaseModule?.supabaseHelpers) {
-          return await supabaseModule.supabaseHelpers.getEUETSReports(50);
-        }
-        throw new Error("Supabase module not available");
-      } catch (error) {
-        console.warn(
-          "Supabase not available, falling back to mock data:",
-          error
-        );
-        return [await mockDataService.getEUETSReport()];
-      }
-    } else {
-      console.log("Supabase not configured, returning mock report");
-      return [await mockDataService.getEUETSReport()];
+    if (this.useMockData) {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      return [mockEUETSReport];
     }
-  },
-};
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/reports/eu-ets`);
+      return response.data;
+    } catch (error) {
+      console.warn("API call failed, falling back to mock data:", error);
+      return [mockEUETSReport];
+    }
+  }
+
+  async generateCustomMockData(hours: number = 24): Promise<PowerPlantData[]> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return generateMockData(hours);
+  }
+
+  async testAPIConnectivity(): Promise<boolean> {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/health`, {
+        timeout: 5000,
+      });
+      return response.status === 200;
+    } catch (error) {
+      console.warn("API connectivity test failed:", error);
+      return false;
+    }
+  }
+}
+
+// Export a singleton instance
+export const dataService = DataService.getInstance();
