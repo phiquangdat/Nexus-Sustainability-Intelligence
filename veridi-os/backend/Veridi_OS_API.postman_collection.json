@@ -1,0 +1,187 @@
+{
+  "info": {
+    "name": "Veridi OS API",
+    "description": "API collection for Veridi OS sustainability intelligence platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the API server is running"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/health",
+                  "host": ["{{base_url}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"OK\",\n  \"timestamp\": \"2024-09-27T14:30:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Root Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Basic API information and status"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/",
+                  "host": ["{{base_url}}"],
+                  "path": [""]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Veridi OS Backend API is running!\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "System health and status endpoints"
+    },
+    {
+      "name": "Power Plant Data",
+      "item": [
+        {
+          "name": "Get All Power Plant Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data"]
+            },
+            "description": "Retrieve all power plant operational data"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/data",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "data"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"timestamp\": \"2024-09-20T00:00:00.000Z\",\n    \"plant_id\": \"Vaasa-Plant-A\",\n    \"fuel_type\": \"Natural Gas\",\n    \"fuel_consumed_liters\": 3250.45,\n    \"energy_output_mwh\": 1425.30,\n    \"co2_emissions_tonnes\": 650.09\n  },\n  {\n    \"timestamp\": \"2024-09-20T01:00:00.000Z\",\n    \"plant_id\": \"Vaasa-Plant-B\",\n    \"fuel_type\": \"HFO\",\n    \"fuel_consumed_liters\": 4100.20,\n    \"energy_output_mwh\": 1640.08,\n    \"co2_emissions_tonnes\": 1230.06\n  }\n]"
+            }
+          ]
+        }
+      ],
+      "description": "Power plant operational data endpoints"
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Generate EU ETS Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/eu-ets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "eu-ets"]
+            },
+            "description": "Generate an automated EU ETS compliance report"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/reports/eu-ets",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "reports", "eu-ets"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"total_emissions_tonnes\": 18547.32,\n  \"reporting_period\": \"Q3 2024\",\n  \"status\": \"Compliant\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Sustainability reporting endpoints"
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "description": "Base URL for the Veridi OS API"
+    }
+  ]
+}
