@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: Veridi OS API
+  description: |
+    The Veridi OS API provides endpoints for accessing power plant data and generating sustainability reports. 
+    This RESTful API serves as the backend for the Veridi OS sustainability intelligence platform.
+  version: 1.0.0
+  contact:
+    name: Veridi OS Development Team
+    email: support@veridi-os.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:4000
+    description: Development server
+  - url: https://api.veridi-os.com
+    description: Production server
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check if the API server is running
+      operationId: getHealth
+      tags:
+        - System
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: "OK"
+                timestamp: "2024-09-27T14:30:00.000Z"
+
+  /:
+    get:
+      summary: Root Endpoint
+      description: Basic API information and status
+      operationId: getRoot
+      tags:
+        - System
+      responses:
+        "200":
+          description: API is running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RootResponse"
+              example:
+                message: "Veridi OS Backend API is running!"
+
+  /api/data:
+    get:
+      summary: Get Power Plant Data
+      description: Retrieve all power plant operational data
+      operationId: getPowerPlantData
+      tags:
+        - Power Plant Data
+      responses:
+        "200":
+          description: Data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PowerPlantData"
+              example:
+                - timestamp: "2024-09-20T00:00:00.000Z"
+                  plant_id: "Vaasa-Plant-A"
+                  fuel_type: "Natural Gas"
+                  fuel_consumed_liters: 3250.45
+                  energy_output_mwh: 1425.30
+                  co2_emissions_tonnes: 650.09
+                - timestamp: "2024-09-20T01:00:00.000Z"
+                  plant_id: "Vaasa-Plant-B"
+                  fuel_type: "HFO"
+                  fuel_consumed_liters: 4100.20
+                  energy_output_mwh: 1640.08
+                  co2_emissions_tonnes: 1230.06
+
+  /api/reports/eu-ets:
+    get:
+      summary: Generate EU ETS Report
+      description: Generate an automated EU ETS compliance report
+      operationId: getEUETSReport
+      tags:
+        - Reports
+      responses:
+        "200":
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EUETSReport"
+              example:
+                total_emissions_tonnes: 18547.32
+                reporting_period: "Q3 2024"
+                status: "Compliant"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [OK]
+          description: Health status
+        timestamp:
+          type: string
+          format: date-time
+          description: Current server timestamp
+
+    RootResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: API status message
+
+    PowerPlantData:
+      type: object
+      required:
+        - timestamp
+        - plant_id
+        - fuel_type
+        - fuel_consumed_liters
+        - energy_output_mwh
+        - co2_emissions_tonnes
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the data point
+        plant_id:
+          type: string
+          description: Unique identifier for the power plant
+          example: "Vaasa-Plant-A"
+        fuel_type:
+          type: string
+          enum: [Natural Gas, HFO]
+          description: Type of fuel used
+        fuel_consumed_liters:
+          type: number
+          format: float
+          description: Amount of fuel consumed in liters
+        energy_output_mwh:
+          type: number
+          format: float
+          description: Energy output in megawatt-hours
+        co2_emissions_tonnes:
+          type: number
+          format: float
+          description: CO2 emissions in tonnes
+
+    EUETSReport:
+      type: object
+      required:
+        - total_emissions_tonnes
+        - reporting_period
+        - status
+      properties:
+        total_emissions_tonnes:
+          type: number
+          format: float
+          description: Total CO2 emissions for the period in tonnes
+        reporting_period:
+          type: string
+          description: The reporting period
+          example: "Q3 2024"
+        status:
+          type: string
+          enum: [Compliant, Non-Compliant]
+          description: Compliance status
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - status
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Error message
+        status:
+          type: integer
+          description: HTTP status code
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication (planned for future implementation)
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Power Plant Data
+    description: Power plant operational data endpoints
+  - name: Reports
+    description: Sustainability reporting endpoints
