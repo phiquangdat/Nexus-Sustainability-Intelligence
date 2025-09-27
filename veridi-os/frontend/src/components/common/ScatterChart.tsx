@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  ScatterChart,
+  ScatterChart as RechartsScatterChart,
   Scatter,
   XAxis,
   YAxis,
@@ -87,7 +87,7 @@ const ScatterChart: React.FC = () => {
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
-          <ScatterChart data={data}>
+          <RechartsScatterChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               type="number"
@@ -128,7 +128,7 @@ const ScatterChart: React.FC = () => {
               }}
             />
             <Scatter dataKey="co2_intensity" fill="#3b82f6" r={6} />
-          </ScatterChart>
+          </RechartsScatterChart>
         </ResponsiveContainer>
       )}
     </div>

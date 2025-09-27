@@ -6,7 +6,7 @@ import CO2IntensityChart from "./CO2IntensityChart";
 import GenerationMixChart from "./GenerationMixChart";
 import NetZeroAlignmentChart from "./NetZeroAlignmentChart";
 import ScatterChart from "./ScatterChart";
-import { Card, Button, MetricCard } from "./ui";
+import { Card, Button, MetricCard } from "../ui";
 
 import { analysisService } from "../services/analysisService";
 import type {
