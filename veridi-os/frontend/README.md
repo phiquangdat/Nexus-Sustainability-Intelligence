@@ -1,73 +1,201 @@
-# React + TypeScript + Vite
+# Veridi OS Frontend - Sustainability Intelligence Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive React frontend for the Nexus Sustainability Intelligence Platform, built with TypeScript, Tailwind CSS, and modern React patterns.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### ✨ Modern Design System
+- **Glass morphism** design with backdrop blur effects
+- **Dark/Light mode** support with system preference detection
+- **Responsive design** optimized for all screen sizes
+- **Smooth animations** and micro-interactions
+- **Accessible** components with ARIA labels and keyboard navigation
 
-## React Compiler
+### 🏗️ Architecture
+- **Component-based** architecture with reusable UI components
+- **Layout system** with Header, Sidebar, Navigation, and Footer
+- **Theme management** with React Context and localStorage persistence
+- **Performance optimized** with lazy loading and memoization
+- **Type-safe** with comprehensive TypeScript interfaces
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 📱 Components
 
-## Expanding the ESLint configuration
+#### Layout Components
+- `MainLayout` - Main application layout wrapper
+- `Header` - Top navigation with theme toggle and notifications
+- `Sidebar` - Collapsible navigation sidebar
+- `Navbar` - Horizontal navigation bar
+- `Footer` - Application footer with links and information
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+#### UI Components
+- `Button` - Enhanced button with multiple variants and sizes
+- `Card` - Flexible card component with glow effects
+- `LoadingSpinner` - Accessible loading spinner with multiple variants
+- `MetricCard` - Specialized card for displaying metrics
+- `Badge` - Status and category badges
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+#### Chart Components
+- `CO2IntensityChart` - CO₂ emissions intensity visualization
+- `GenerationMixChart` - Energy generation mix charts
+- `NetZeroAlignmentChart` - Net-zero alignment tracking
+- `ScatterChart` - Correlation analysis charts
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 🎨 Design System
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+#### Color Palette
+- **Primary**: Green tones for sustainability theme
+- **Secondary**: Blue tones for technology and data
+- **Accent**: Purple tones for highlights and CTAs
+- **Neutral**: Gray scale for text and backgrounds
+- **Semantic**: Success, warning, error colors
+
+#### Typography
+- **Font Family**: Inter (primary), JetBrains Mono (code)
+- **Responsive sizing** with fluid typography
+- **Gradient text** effects for headings
+
+#### Spacing & Layout
+- **Consistent spacing** using Tailwind's spacing scale
+- **Grid system** for responsive layouts
+- **Flexbox utilities** for component alignment
+
+### 🔧 Technical Features
+
+#### Performance Optimizations
+- **Lazy loading** for route components
+- **Memoization** for expensive calculations
+- **Code splitting** for smaller bundle sizes
+- **Performance monitoring** hooks
+
+#### Accessibility
+- **ARIA labels** and roles
+- **Keyboard navigation** support
+- **Screen reader** compatibility
+- **Focus management** for modals and dropdowns
+
+#### State Management
+- **Redux Toolkit** for global state
+- **React Context** for theme management
+- **Custom hooks** for data fetching and performance
+
+### 📁 Project Structure
+
+```
+src/
+├── components/
+│   ├── layout/           # Layout components
+│   ├── common/           # Shared components
+│   ├── charts/           # Chart components
+│   ├── forms/            # Form components
+│   └── ui/               # Base UI components
+├── hooks/
+│   ├── useApi/           # API-related hooks
+│   ├── useAuth/          # Authentication hooks
+│   └── useTheme/         # Theme management
+├── pages/                # Route components
+├── services/
+│   └── api/              # API service functions
+├── state/                # Redux store and slices
+├── types/
+│   ├── interfaces/       # TypeScript interfaces
+│   └── api/              # API type definitions
+├── utils/
+│   ├── constants/        # Application constants
+│   └── helpers/          # Utility functions
+└── lib/                  # Third-party integrations
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 🛠️ Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+#### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+#### Installation
+```bash
+npm install
 ```
+
+#### Development Server
+```bash
+npm run dev
+```
+
+#### Build
+```bash
+npm run build
+```
+
+#### Linting
+```bash
+npm run lint
+```
+
+### 🎯 Usage Examples
+
+#### Using the Theme System
+```tsx
+import { useTheme } from './hooks/useTheme';
+
+function MyComponent() {
+  const { theme, toggleTheme } = useTheme();
+  
+  return (
+    <div className={`${theme === 'dark' ? 'bg-neutral-900' : 'bg-white'}`}>
+      <button onClick={toggleTheme}>
+        {theme === 'dark' ? '☀️' : '🌙'}
+      </button>
+    </div>
+  );
+}
+```
+
+#### Using UI Components
+```tsx
+import { Button, Card } from './components/ui';
+
+function Dashboard() {
+  return (
+    <Card padding="lg" glow="green">
+      <h2>Dashboard</h2>
+      <Button variant="primary" size="lg" icon="📊">
+        View Analytics
+      </Button>
+    </Card>
+  );
+}
+```
+
+#### Performance Monitoring
+```tsx
+import { usePerformance } from './hooks/usePerformance';
+
+function ExpensiveComponent() {
+  const { startRender, endRender } = usePerformance('ExpensiveComponent');
+  
+  useEffect(() => {
+    startRender();
+    // Expensive operation
+    endRender();
+  }, []);
+  
+  return <div>Content</div>;
+}
+```
+
+### 🔮 Future Enhancements
+
+- [ ] **PWA support** with service workers
+- [ ] **Real-time updates** with WebSocket integration
+- [ ] **Advanced animations** with Framer Motion
+- [ ] **Internationalization** (i18n) support
+- [ ] **Component testing** with Jest and React Testing Library
+- [ ] **Storybook** integration for component documentation
+
+### 📄 License
+
+This project is part of the Nexus Sustainability Intelligence Platform.
+
+---
+
+Built with ❤️ by The Nexus Team
