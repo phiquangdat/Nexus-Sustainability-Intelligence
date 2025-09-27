@@ -62,25 +62,29 @@ const GenerationMixChart: React.FC<GenerationMixChartProps> = ({
           Generation Mix Over Time
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Stacked by technology (MW). Weather, maintenance, and price signals drive shifts.
+          Stacked by technology (MW). Weather, maintenance, and price signals
+          drive shifts.
         </p>
-        
+
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="timestamp" 
+              <XAxis
+                dataKey="timestamp"
                 tickFormatter={formatTimestamp}
                 tick={{ fontSize: 12 }}
               />
-              <YAxis 
-                label={{ value: 'MW', angle: -90, position: 'insideLeft' }}
+              <YAxis
+                label={{ value: "MW", angle: -90, position: "insideLeft" }}
                 tick={{ fontSize: 12 }}
               />
-              <Tooltip 
+              <Tooltip
                 labelFormatter={(value) => `Time: ${formatTimestamp(value)}`}
-                formatter={(value: number, name: string) => [formatTooltipValue(value), name]}
+                formatter={(value: number, name: string) => [
+                  formatTooltipValue(value),
+                  name,
+                ]}
               />
               <Area
                 type="monotone"
@@ -125,10 +129,11 @@ const GenerationMixChart: React.FC<GenerationMixChartProps> = ({
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        
+
         <div className="mt-4 text-xs text-gray-500">
-          <strong>What this shows:</strong> Larger renewable area → expect lower CO₂ intensity. 
-          Supports ESRS disclosures on energy mix and renewable share.
+          <strong>What this shows:</strong> Larger renewable area → expect lower
+          CO₂ intensity. Supports ESRS disclosures on energy mix and renewable
+          share.
         </div>
       </div>
 
@@ -139,9 +144,10 @@ const GenerationMixChart: React.FC<GenerationMixChartProps> = ({
             Current Generation Mix
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Current mix snapshot. Higher renewable share typically correlates with lower CO₂ intensity.
+            Current mix snapshot. Higher renewable share typically correlates
+            with lower CO₂ intensity.
           </p>
-          
+
           <div className="h-64 flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -150,7 +156,9 @@ const GenerationMixChart: React.FC<GenerationMixChartProps> = ({
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name} ${((percent as number) * 100).toFixed(0)}%`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -159,14 +167,16 @@ const GenerationMixChart: React.FC<GenerationMixChartProps> = ({
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => [`${value.toFixed(1)} MW`, '']} />
+                <Tooltip
+                  formatter={(value: number) => [`${value.toFixed(1)} MW`, ""]}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          
+
           <div className="mt-4 text-xs text-gray-500">
-            <strong>What this shows:</strong> Share of output by technology right now. 
-            Bigger renewable slices → lower expected CO₂ intensity.
+            <strong>What this shows:</strong> Share of output by technology
+            right now. Bigger renewable slices → lower expected CO₂ intensity.
           </div>
         </div>
       )}
