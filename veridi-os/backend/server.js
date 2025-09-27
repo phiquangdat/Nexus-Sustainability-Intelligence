@@ -7,14 +7,18 @@ const mockData = require("./mockData");
 const DatabaseService = require("./services/databaseService");
 const GoalTracker = require("./services/goalTracker");
 const DataSimulator = require("./services/dataSimulator");
+const AnalysisService = require("./services/analysisService");
+const SimulatorService = require("./services/simulatorService");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Initialize database service
+// Initialize services
 const dbService = new DatabaseService();
 const goalTracker = new GoalTracker();
 const dataSimulator = new DataSimulator();
+const analysisService = new AnalysisService();
+const simulatorService = new SimulatorService();
 
 // Middleware
 app.use(cors());
@@ -111,14 +115,14 @@ app.get("/api/plants/summary", async (req, res) => {
       const data = await dbService.getPowerPlantsSummary();
       res.json(data);
     } else {
-      res.status(503).json({ 
-        error: 'Database not configured',
-        message: 'Supabase connection required for this endpoint'
+      res.status(503).json({
+        error: "Database not configured",
+        message: "Supabase connection required for this endpoint",
       });
     }
   } catch (error) {
-    console.error('Error fetching power plants summary:', error);
-    res.status(500).json({ error: 'Failed to fetch power plants summary' });
+    console.error("Error fetching power plants summary:", error);
+    res.status(500).json({ error: "Failed to fetch power plants summary" });
   }
 });
 
@@ -126,17 +130,19 @@ app.get("/api/plants/summary", async (req, res) => {
 app.get("/api/emissions/recent", async (req, res) => {
   try {
     if (dbService.isSupabaseAvailable()) {
-      const data = await dbService.getRecentEmissions(parseInt(req.query.limit) || 100);
+      const data = await dbService.getRecentEmissions(
+        parseInt(req.query.limit) || 100
+      );
       res.json(data);
     } else {
-      res.status(503).json({ 
-        error: 'Database not configured',
-        message: 'Supabase connection required for this endpoint'
+      res.status(503).json({
+        error: "Database not configured",
+        message: "Supabase connection required for this endpoint",
       });
     }
   } catch (error) {
-    console.error('Error fetching recent emissions:', error);
-    res.status(500).json({ error: 'Failed to fetch recent emissions' });
+    console.error("Error fetching recent emissions:", error);
+    res.status(500).json({ error: "Failed to fetch recent emissions" });
   }
 });
 
@@ -331,30 +337,130 @@ app.get("/api/sustainability/kpis", async (req, res) => {
       const allData = dataSimulator.generateAllData(100);
       const latestCo2 = allData.co2Intensity[allData.co2Intensity.length - 1];
       const latestGen = allData.generationMix[allData.generationMix.length - 1];
-      const latestNetZero = allData.netZeroAlignment[allData.netZeroAlignment.length - 1];
-      
+      const latestNetZero =
+        allData.netZeroAlignment[allData.netZeroAlignment.length - 1];
+
       res.json({
         co2_intensity: {
           current: latestCo2.co2_intensity_g_per_kwh,
           trend: "decreasing",
-          change_pct: -5.2
+          change_pct: -5.2,
         },
         renewable_share: {
           current: latestGen.renewable_share_pct,
           trend: "increasing",
-          change_pct: 3.1
+          change_pct: 3.1,
         },
         netzero_alignment: {
           current: latestNetZero.alignment_pct,
           trend: "on_track",
-          change_pct: 2.3
-        }
+          change_pct: 2.3,
+        },
       });
     }
   } catch (error) {
     console.error("Error fetching sustainability KPIs:", error);
     res.status(500).json({ error: "Failed to fetch sustainability KPIs" });
   }
+});
+
+// Analysis Service Endpoints
+
+// Get comprehensive analysis
+app.get("/api/analysis", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 1000;
+    const analysis = await analysisService.getAnalysis(limit);
+    res.json(analysis);
+  } catch (error) {
+    console.error("Error fetching analysis:", error);
+    res.status(500).json({ error: "Failed to fetch analysis" });
+  }
+});
+
+// Get analysis summaries only
+app.get("/api/analysis/summaries", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 1000;
+    const analysis = await analysisService.getAnalysis(limit);
+    res.json(analysis.summaries);
+  } catch (error) {
+    console.error("Error fetching analysis summaries:", error);
+    res.status(500).json({ error: "Failed to fetch analysis summaries" });
+  }
+});
+
+// Get goal tracker metrics
+app.get("/api/analysis/goal-tracker", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 1000;
+    const analysis = await analysisService.getAnalysis(limit);
+    res.json(analysis.goalTracker);
+  } catch (error) {
+    console.error("Error fetching goal tracker:", error);
+    res.status(500).json({ error: "Failed to fetch goal tracker" });
+  }
+});
+
+// Simulator Service Endpoints
+
+// Run simulation once
+app.post("/api/simulator/run-once", async (req, res) => {
+  try {
+    const { timestamp } = req.body;
+    const result = await simulatorService.runOnce(timestamp);
+    res.json(result);
+  } catch (error) {
+    console.error("Error running simulation:", error);
+    res.status(500).json({ error: "Failed to run simulation" });
+  }
+});
+
+// Generate historical data
+app.post("/api/simulator/generate-historical", async (req, res) => {
+  try {
+    const { startDate, endDate, intervalMinutes = 15 } = req.body;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        error: "Missing required parameters",
+        required: ["startDate", "endDate"],
+      });
+    }
+
+    const result = await simulatorService.generateHistoricalData(
+      startDate,
+      endDate,
+      intervalMinutes
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("Error generating historical data:", error);
+    res.status(500).json({ error: "Failed to generate historical data" });
+  }
+});
+
+// Start continuous simulation
+app.post("/api/simulator/start-continuous", async (req, res) => {
+  try {
+    // Start continuous simulation in background
+    simulatorService.runContinuous().catch((error) => {
+      console.error("Continuous simulation error:", error);
+    });
+
+    res.json({
+      message: "Continuous simulation started",
+      status: "running",
+    });
+  } catch (error) {
+    console.error("Error starting continuous simulation:", error);
+    res.status(500).json({ error: "Failed to start continuous simulation" });
+  }
+});
+
+// Get simulator configuration
+app.get("/api/simulator/config", (req, res) => {
+  res.json(simulatorService.config);
 });
 
 

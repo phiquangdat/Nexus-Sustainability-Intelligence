@@ -204,6 +204,172 @@ class DatabaseService {
     }
   }
 
+  // ============================================================================
+  // SUSTAINABILITY INTELLIGENCE METHODS
+  // ============================================================================
+
+  // Get CO2 intensity data
+  async getCo2IntensityData(limit = 1000, order = "timestamp") {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("co2_intensity")
+        .select("*")
+        .order(order, { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching CO2 intensity data:", error);
+      throw error;
+    }
+  }
+
+  // Get generation mix data
+  async getGenerationMixData(limit = 1000, order = "timestamp") {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("generation_mix")
+        .select("*")
+        .order(order, { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching generation mix data:", error);
+      throw error;
+    }
+  }
+
+  // Get net-zero alignment data
+  async getNetZeroAlignmentData(limit = 100, order = "year") {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("netzero_alignment")
+        .select("*")
+        .order(order, { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching net-zero alignment data:", error);
+      throw error;
+    }
+  }
+
+  // Get sustainability KPIs
+  async getSustainabilityKPIs() {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("latest_sustainability_metrics")
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching sustainability KPIs:", error);
+      throw error;
+    }
+  }
+
+  // Get goal tracker metrics
+  async getGoalTrackerMetrics() {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      // This would typically involve complex calculations
+      // For now, return a placeholder that the analysis service will handle
+      return {
+        message: "Goal tracker metrics calculated by analysis service",
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error("Error fetching goal tracker metrics:", error);
+      throw error;
+    }
+  }
+
+  // Insert CO2 intensity data
+  async insertCo2IntensityData(data) {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      const { data: result, error } = await supabase
+        .from("co2_intensity")
+        .insert(data)
+        .select();
+
+      if (error) throw error;
+      return result;
+    } catch (error) {
+      console.error("Error inserting CO2 intensity data:", error);
+      throw error;
+    }
+  }
+
+  // Insert generation mix data
+  async insertGenerationMixData(data) {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      const { data: result, error } = await supabase
+        .from("generation_mix")
+        .insert(data)
+        .select();
+
+      if (error) throw error;
+      return result;
+    } catch (error) {
+      console.error("Error inserting generation mix data:", error);
+      throw error;
+    }
+  }
+
+  // Insert net-zero alignment data
+  async insertNetZeroAlignmentData(data) {
+    if (!this.useSupabase) {
+      throw new Error("Supabase not configured");
+    }
+
+    try {
+      const { data: result, error } = await supabase
+        .from("netzero_alignment")
+        .upsert(data, { onConflict: "year" })
+        .select();
+
+      if (error) throw error;
+      return result;
+    } catch (error) {
+      console.error("Error inserting net-zero alignment data:", error);
+      throw error;
+    }
+  }
+
   // Test database connection
   async testConnection() {
     if (!this.useSupabase) {
