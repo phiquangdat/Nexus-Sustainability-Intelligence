@@ -2,10 +2,16 @@ const { createClient } = require("@supabase/supabase-js");
 
 class SimulatorService {
   constructor() {
-    this.supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_KEY
-    );
+    // Initialize Supabase client with fallback for missing credentials
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (supabaseUrl && supabaseKey) {
+      this.supabase = createClient(supabaseUrl, supabaseKey);
+    } else {
+      console.log("Supabase credentials not found. Simulator will use mock mode.");
+      this.supabase = null;
+    }
 
     // Configuration
     this.config = {

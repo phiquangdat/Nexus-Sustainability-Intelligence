@@ -26,14 +26,14 @@ const ScatterPage: React.FC = () => {
       const limit = timeRange === '24h' ? 96 : 96 * 7;
       const analysis = await analysisService.getAnalysis(limit);
       
-      const co2Data = analysis.rawData.co2_intensity || [];
+      const co2Data = analysis.rawData.co2 || [];
       const genData = analysis.rawData.generation_mix || [];
       
       // Merge data on timestamp
       const mergedData: ScatterDataPoint[] = [];
-      const co2Map = new Map(co2Data.map(item => [item.timestamp, item]));
+      const co2Map = new Map(co2Data.map((item: any) => [item.timestamp, item]));
       
-      genData.forEach(genItem => {
+      genData.forEach((genItem: any) => {
         const co2Item = co2Map.get(genItem.timestamp);
         if (co2Item) {
           mergedData.push({
