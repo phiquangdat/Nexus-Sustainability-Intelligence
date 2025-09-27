@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { PowerPlantData, PowerPlantSummary } from "../types";
-import { dataService } from "../services/api/dataService";
+import { DataService } from "../services/dataService";
 
 // Define the state interface
 interface DataState {
@@ -26,7 +26,7 @@ export const fetchPowerPlantData = createAsyncThunk(
   "data/fetchPowerPlantData",
   async (_, { rejectWithValue }) => {
     try {
-      const data = await dataService.getPowerPlantData();
+      const data = await DataService.getPowerPlants();
       return data;
     } catch (error) {
       return rejectWithValue(

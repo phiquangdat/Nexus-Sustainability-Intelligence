@@ -1,9 +1,13 @@
 // Enhanced Goal Tracker Component - Integrates Streamlit Home.py goal tracking functionality
 import { useState, useEffect } from "react";
-import {
-  analysisService,
-  type GoalTrackerResult,
-} from "../../services/api/analysisService";
+import { AnalysisService } from "../../services/analysisService";
+
+interface GoalTrackerResult {
+  co2ReductionProgress: number;
+  renewableTargetProgress: number;
+  netZeroAlignment: number;
+  overallProgress: number;
+}
 
 interface GoalTrackerProps {
   className?: string;
@@ -25,19 +29,20 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
       setError(null);
 
       // Fetch comprehensive analysis from backend
-      const analysis = await analysisService.getAnalysis(1000);
+      const dashboardData = await AnalysisService.getDashboardData();
 
       // Extract data from analysis response
-      const co2Data = analysis.rawData.co2 || [];
-      const genData = analysis.rawData.generation_mix || [];
-      const nzData = analysis.rawData.netzero_alignment || [];
+      const co2Data = dashboardData.co2Records || [];
+      const genData = dashboardData.generationMixRecords || [];
+      const nzData = dashboardData.netZeroRecords || [];
 
-      // Compute goal tracker metrics
-      const result = analysisService.computeGoalTracker(
-        co2Data,
-        genData,
-        nzData
-      );
+      // Create a simple goal tracker result
+      const result = {
+        co2ReductionProgress: co2Data.length > 0 ? Math.min(100, (co2Data[0].co2_intensity / 1000) * 100) : 0,
+        renewableTargetProgress: genData.length > 0 ? genData[0].renewable_percentage : 0,
+        netZeroAlignment: nzData.length > 0 ? nzData[0].alignment_score : 0,
+        overallProgress: 0
+      };
       setGoalTrackerData(result);
     } catch (err) {
       setError(

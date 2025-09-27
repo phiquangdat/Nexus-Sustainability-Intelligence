@@ -1,10 +1,7 @@
 import { DataService } from "./dataService";
 import type {
   PowerPlantData,
-  EUETSReport,
   ScatterData,
-  Co2IntensityRecord,
-  GenerationMixRecord,
   NetZeroAlignmentRecord,
 } from "../types";
 
@@ -98,7 +95,7 @@ export class AnalysisService {
   private static generateInsights(
     powerPlants: PowerPlantData[],
     scatterData: ScatterData[],
-    netZeroRecords: NetZeroAlignmentRecord[]
+    _netZeroRecords: NetZeroAlignmentRecord[]
   ): string[] {
     const insights: string[] = [];
 

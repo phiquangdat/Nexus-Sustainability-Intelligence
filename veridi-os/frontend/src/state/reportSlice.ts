@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { EUETSReport } from "../types";
-import { dataService } from "../services/api/dataService";
+import { DataService } from "../services/dataService";
 
 // Define the state interface
 interface ReportState {
@@ -25,7 +25,7 @@ export const generateEUETSReport = createAsyncThunk(
   "report/generateEUETSReport",
   async (_, { rejectWithValue }) => {
     try {
-      const report = await dataService.getEUETSReport();
+      const report = await DataService.getEUETSReportById("latest");
       return report;
     } catch (error) {
       return rejectWithValue(
@@ -42,7 +42,7 @@ export const fetchEUETSReports = createAsyncThunk(
   "report/fetchEUETSReports",
   async (_, { rejectWithValue }) => {
     try {
-      const reports = await dataService.getEUETSReports();
+      const reports = await DataService.getEUETSReports();
       return reports;
     } catch (error) {
       return rejectWithValue(
@@ -57,10 +57,13 @@ export const fetchEUETSReports = createAsyncThunk(
 // Async thunk for generating custom period report
 export const generateCustomReport = createAsyncThunk(
   "report/generateCustomReport",
-  async (_: { startDate: string; endDate: string; period: string }, { rejectWithValue }) => {
+  async (
+    _: { startDate: string; endDate: string; period: string },
+    { rejectWithValue }
+  ) => {
     try {
       // For now, just generate a standard report
-      const report = await dataService.getEUETSReport();
+      const report = await DataService.getEUETSReportById("latest");
       return report;
     } catch (error) {
       return rejectWithValue(

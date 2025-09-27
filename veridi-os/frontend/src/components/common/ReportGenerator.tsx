@@ -6,7 +6,7 @@ import {
   selectReportLoading,
   selectReportError,
   selectReportsSummary,
-} from "../state/reportSlice";
+} from "../../state/reportSlice";
 import LoadingSpinner from "./LoadingSpinner";
 
 const ReportGenerator = () => {

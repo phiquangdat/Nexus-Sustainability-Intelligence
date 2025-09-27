@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { analysisService } from "../services/api/analysisService";
+import { AnalysisService } from "../services/analysisService";
 
 interface NetZeroData {
   year: number;
@@ -32,8 +32,8 @@ const NetZeroPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const analysis = await analysisService.getAnalysis(200);
-      const netZeroData = analysis.rawData.netzero_alignment || [];
+      const analysis = await AnalysisService.getNetZeroAnalysis();
+      const netZeroData = analysis.records || [];
 
       setData(netZeroData);
     } catch (err) {

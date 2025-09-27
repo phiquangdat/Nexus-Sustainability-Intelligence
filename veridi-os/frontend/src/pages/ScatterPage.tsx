@@ -155,7 +155,7 @@ const ScatterPage: React.FC = () => {
                     `${value}${name === "Renewable %" ? "%" : " kg/MWh"}`,
                     name,
                   ]}
-                  labelFormatter={(label: string, payload: any[]) => {
+                  labelFormatter={(_: string, payload: any[]) => {
                     if (payload && payload[0]) {
                       return `Plant: ${payload[0].payload.plant_name}`;
                     }
