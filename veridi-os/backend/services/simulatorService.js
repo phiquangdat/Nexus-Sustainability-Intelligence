@@ -5,11 +5,13 @@ class SimulatorService {
     // Initialize Supabase client with fallback for missing credentials
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
+
     if (supabaseUrl && supabaseKey) {
       this.supabase = createClient(supabaseUrl, supabaseKey);
     } else {
-      console.log("Supabase credentials not found. Simulator will use mock mode.");
+      console.log(
+        "Supabase credentials not found. Simulator will use mock mode."
+      );
       this.supabase = null;
     }
 
@@ -41,6 +43,10 @@ class SimulatorService {
     if (this.config.randomSeed) {
       this.seedRandom(this.config.randomSeed);
     }
+
+    // Continuous simulation control
+    this.isRunning = false;
+    this.shouldStop = false;
   }
 
   seedRandom(seed) {
@@ -196,6 +202,13 @@ class SimulatorService {
 
   async insertRows(tableName, rows, onConflict = null, resolution = "ignore") {
     try {
+      if (!this.supabase) {
+        console.log(
+          `Mock mode: Would insert ${rows.length} rows into ${tableName}`
+        );
+        return { data: rows, error: null };
+      }
+
       if (onConflict) {
         // For upsert operations
         const { data, error } = await this.supabase
@@ -273,9 +286,11 @@ class SimulatorService {
 
   async runContinuous() {
     console.log("Starting continuous simulation...");
+    this.isRunning = true;
+    this.shouldStop = false;
     let anchor = new Date();
 
-    while (true) {
+    while (!this.shouldStop) {
       try {
         const result = await this.runOnce(anchor.toISOString());
         console.log(`Simulated data for ${result.timestamp}`);
@@ -294,6 +309,14 @@ class SimulatorService {
         await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds before retry
       }
     }
+    
+    this.isRunning = false;
+    console.log("Continuous simulation stopped.");
+  }
+
+  stopContinuous() {
+    console.log("Stopping continuous simulation...");
+    this.shouldStop = true;
   }
 
   async generateHistoricalData(startDate, endDate, intervalMinutes = 15) {

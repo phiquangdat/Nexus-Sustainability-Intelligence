@@ -4,7 +4,6 @@ import {
   analysisService,
   type GoalTrackerResult,
 } from "../services/analysisService";
-import { supabaseService } from "../services/supabaseService";
 
 interface GoalTrackerProps {
   className?: string;
@@ -25,12 +24,13 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
       setLoading(true);
       setError(null);
 
-      // Fetch data from Supabase
-      const [co2Data, genData, nzData] = await Promise.all([
-        supabaseService.fetchCo2IntensityData(1000),
-        supabaseService.fetchGenerationMixData(1000),
-        supabaseService.fetchNetZeroAlignmentData(100),
-      ]);
+      // Fetch comprehensive analysis from backend
+      const analysis = await analysisService.getAnalysis(1000);
+
+      // Extract data from analysis response
+      const co2Data = analysis.rawData.co2 || [];
+      const genData = analysis.rawData.generation_mix || [];
+      const nzData = analysis.rawData.netzero_alignment || [];
 
       // Compute goal tracker metrics
       const result = analysisService.computeGoalTracker(

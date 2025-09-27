@@ -458,6 +458,20 @@ app.post("/api/simulator/start-continuous", async (req, res) => {
   }
 });
 
+// Stop continuous simulation
+app.post("/api/simulator/stop-continuous", async (req, res) => {
+  try {
+    simulatorService.stopContinuous();
+    res.json({
+      message: "Continuous simulation stopped",
+      status: "stopped",
+    });
+  } catch (error) {
+    console.error("Error stopping continuous simulation:", error);
+    res.status(500).json({ error: "Failed to stop continuous simulation" });
+  }
+});
+
 // Get simulator configuration
 app.get("/api/simulator/config", (req, res) => {
   res.json(simulatorService.config);
