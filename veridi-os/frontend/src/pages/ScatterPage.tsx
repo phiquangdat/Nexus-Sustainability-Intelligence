@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { analysisService } from "../services/api/analysisService";
+import { AnalysisService } from "../services/analysisService";
 
 interface ScatterData {
   renewable_percentage: number;
@@ -31,8 +31,8 @@ const ScatterPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const analysis = await analysisService.getAnalysis(200);
-      const scatterData = analysis.rawData.scatter_data || [];
+      const analysis = await AnalysisService.getScatterAnalysis();
+      const scatterData = analysis.data || [];
 
       setData(scatterData);
     } catch (err) {

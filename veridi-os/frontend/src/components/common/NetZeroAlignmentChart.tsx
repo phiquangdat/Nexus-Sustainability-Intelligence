@@ -1,132 +1,90 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { analysisService } from "../../services/api/analysisService";
+import type { NetZeroAlignmentRecord } from "../../types";
 
-interface NetZeroAlignmentData {
-  year: number;
-  actual_emissions_mt: number;
-  target_emissions_mt: number;
-  alignment_pct: number;
+interface NetZeroAlignmentChartProps {
+  data: NetZeroAlignmentRecord[];
+  loading?: boolean;
 }
 
-const NetZeroAlignmentChart: React.FC = () => {
-  const [data, setData] = useState<NetZeroAlignmentData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadNetZeroData();
-  }, []);
-
-  const loadNetZeroData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const analysis = await analysisService.getAnalysis(200);
-      const nzData = analysis.rawData.netzero_alignment || [];
-
-      setData(nzData);
-    } catch (err) {
-      console.error("Error loading net-zero alignment data:", err);
-      setError("Failed to load net-zero alignment data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const NetZeroAlignmentChart: React.FC<NetZeroAlignmentChartProps> = ({
+  data,
+  loading = false,
+}) => {
+  // Transform data for chart
   const chartData = data.map((item) => ({
-    year: item.year,
-    actual: item.actual_emissions_mt,
-    target: item.target_emissions_mt,
-    alignment: item.alignment_pct,
+    plant: item.plant_name,
+    alignment: item.alignment_score,
+    target_year: item.net_zero_target_year,
+    current_reduction: item.current_reduction_percentage,
   }));
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Net-Zero Alignment</h3>
+      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4 text-neutral-900 dark:text-white">
+          Net-Zero Alignment
+        </h3>
         <div className="animate-pulse">
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Net-Zero Alignment</h3>
-        <div className="text-red-600 text-center py-8">
-          <p>{error}</p>
-          <button
-            onClick={loadNetZeroData}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Retry
-          </button>
+          <div className="h-64 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold mb-4">Net-Zero Alignment</h3>
+    <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold mb-4 text-neutral-900 dark:text-white">
+        Net-Zero Alignment
+      </h3>
 
-      {data.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+      {chartData.length === 0 ? (
+        <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
           No net-zero alignment data available
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
+          <BarChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
             <XAxis
-              dataKey="year"
-              type="number"
-              scale="linear"
-              domain={["dataMin", "dataMax"]}
+              dataKey="plant"
+              tick={{ fontSize: 12, fill: "#666" }}
+              stroke="#666"
+              angle={-45}
+              textAnchor="end"
+              height={80}
             />
             <YAxis
               label={{
-                value: "Emissions (Mt)",
+                value: "Alignment Score (%)",
                 angle: -90,
                 position: "insideLeft",
+                style: { textAnchor: "middle", fill: "#666" },
               }}
+              stroke="#666"
             />
             <Tooltip
               formatter={(value, name) => [
-                `${Number(value).toFixed(1)} Mt`,
-                name === "actual" ? "Actual Emissions" : "Target Emissions",
+                `${Number(value).toFixed(1)}%`,
+                name === "alignment" ? "Alignment Score" : "Current Reduction",
               ]}
-              labelFormatter={(year) => `Year: ${year}`}
+              labelFormatter={(plant) => `Plant: ${plant}`}
+              contentStyle={{
+                backgroundColor: "#f8f9fa",
+                border: "1px solid #e5e5e5",
+                borderRadius: "8px",
+              }}
             />
-            <Line
-              type="monotone"
-              dataKey="actual"
-              stroke="#ef4444"
-              strokeWidth={2}
-              dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
-              name="Actual Emissions"
-            />
-            <Line
-              type="monotone"
-              dataKey="target"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-              name="Target Emissions"
-            />
-          </LineChart>
+            <Bar dataKey="alignment" fill="#22c55e" />
+          </BarChart>
         </ResponsiveContainer>
       )}
     </div>

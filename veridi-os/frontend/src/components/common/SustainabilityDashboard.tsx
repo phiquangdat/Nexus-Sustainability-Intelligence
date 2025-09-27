@@ -8,13 +8,13 @@ import NetZeroAlignmentChart from "./NetZeroAlignmentChart";
 import ScatterChart from "./ScatterChart";
 import { Card, Button, MetricCard } from "../ui";
 
-import { analysisService } from "../services/analysisService";
+import { AnalysisService } from "../../services/analysisService";
 import type {
   Co2IntensityRecord,
   GenerationMixRecord,
   NetZeroAlignmentRecord,
-  SustainabilityChartData,
-} from "../types";
+  ScatterData,
+} from "../../types";
 
 interface DashboardProps {
   className?: string;
@@ -36,7 +36,7 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
     co2Data: Co2IntensityRecord[];
     genData: GenerationMixRecord[];
     nzData: NetZeroAlignmentRecord[];
-    scatterData: SustainabilityChartData[];
+    scatterData: ScatterData[];
   }>({
     co2Data: [],
     genData: [],
@@ -61,41 +61,41 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
       setLoading(true);
 
       // Fetch comprehensive analysis from backend
-      const analysis = await analysisService.getAnalysis(100);
+      const dashboardData = await AnalysisService.getDashboardData();
 
       // Extract data from analysis response
-      const co2Data = analysis.rawData.co2 || [];
-      const genData = analysis.rawData.generation_mix || [];
-      const nzData = analysis.rawData.netzero_alignment || [];
+      const co2Data = dashboardData.co2Records || [];
+      const genData = dashboardData.generationMixRecords || [];
+      const nzData = dashboardData.netZeroRecords || [];
 
       // Update KPIs
       if (co2Data.length > 0) {
         setKpis((prev) => ({
           ...prev,
-          co2Intensity: co2Data[0].co2_intensity_g_per_kwh,
+          co2Intensity: co2Data[0].co2_intensity,
         }));
       }
 
       if (genData.length > 0) {
         setKpis((prev) => ({
           ...prev,
-          renewableShare: genData[0].renewable_share_pct,
+          renewableShare: genData[0].renewable_percentage,
         }));
       }
 
       if (nzData.length > 0) {
         setKpis((prev) => ({
           ...prev,
-          netZeroAlignment: nzData[0].alignment_pct,
+          netZeroAlignment: nzData[0].alignment_score,
         }));
       }
 
       // Update chart data
       setChartData({
-        co2Data: co2Data.map((item) => ({ ...item, id: item.id || 0 })),
-        genData: genData.map((item) => ({ ...item, id: item.id || 0 })),
+        co2Data: co2Data,
+        genData: genData,
         nzData,
-        scatterData: [], // Will be generated from co2Data and genData
+        scatterData: dashboardData.scatterData || [],
       });
 
       setLastUpdate(new Date());
