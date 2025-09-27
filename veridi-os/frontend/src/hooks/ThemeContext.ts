@@ -1,21 +1,4 @@
-import { createContext, useContext } from "react";
-
-export type Theme = "light" | "dark";
-
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
-};
-
-export { ThemeContext };
+// This file is deprecated. Use useThemeHook.ts instead.
+// Keeping for backward compatibility
+export { useTheme } from "./useThemeHook";
+export { ThemeContext } from "./useTheme";

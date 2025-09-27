@@ -3,7 +3,7 @@ import { cn } from "../../utils/helpers";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-import { useTheme } from "../../hooks/useTheme";
+import { useTheme } from "../../hooks/useThemeHook";
 
 interface MainLayoutProps {
   children: React.ReactNode;

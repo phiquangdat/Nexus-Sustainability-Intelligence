@@ -54,4 +54,4 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-// useTheme is now imported from ThemeContext.ts
+export { ThemeContext };
