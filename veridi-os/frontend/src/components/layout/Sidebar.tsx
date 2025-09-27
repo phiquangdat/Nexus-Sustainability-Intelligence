@@ -254,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, theme }) => {
           {/* Mobile sidebar header */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-200 dark:border-neutral-800">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-600 rounded-xl flex items-center justify-center shadow-lg animate-glow-pulse">
                 <span className="text-white font-bold text-lg">V</span>
               </div>
               <div>

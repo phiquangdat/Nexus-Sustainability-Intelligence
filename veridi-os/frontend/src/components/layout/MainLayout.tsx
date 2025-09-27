@@ -40,22 +40,26 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             theme === "dark"
               ? "bg-gradient-to-br from-primary-800/20 to-transparent"
               : "bg-gradient-to-br from-primary-200/30 to-transparent"
-          }`}
+          } animate-float`}
         ></div>
         <div
           className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl ${
             theme === "dark"
               ? "bg-gradient-to-tr from-secondary-800/20 to-transparent"
               : "bg-gradient-to-tr from-secondary-200/30 to-transparent"
-          }`}
+          } animate-float animation-delay-2000`}
         ></div>
         <div
           className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl ${
             theme === "dark"
               ? "bg-gradient-to-r from-accent-800/10 to-transparent"
               : "bg-gradient-to-r from-accent-200/20 to-transparent"
-          }`}
+          } animate-float animation-delay-1500`}
         ></div>
+
+        {/* Additional floating elements */}
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-r from-primary-300/10 to-secondary-300/10 rounded-full blur-2xl animate-pulse-slow"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-accent-300/10 to-primary-300/10 rounded-full blur-2xl animate-pulse-slow animation-delay-1000"></div>
       </div>
 
       <div className="relative z-10 flex min-h-screen">

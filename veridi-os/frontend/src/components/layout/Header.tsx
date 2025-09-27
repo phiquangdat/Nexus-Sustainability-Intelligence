@@ -22,6 +22,15 @@ const Header: React.FC<HeaderProps> = ({
           ? "backdrop-blur-md bg-white/80 dark:bg-neutral-900/80 shadow-lg"
           : "bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600"
       } text-white shadow-2xl relative overflow-hidden transition-all duration-300`}
+      style={{
+        background: isScrolled
+          ? undefined
+          : "linear-gradient(135deg, #16a34a 0%, #2563eb 50%, #9333ea 100%)",
+        backgroundSize: "200% 200%",
+        animation: isScrolled
+          ? "none"
+          : "gradientShift 8s ease-in-out infinite",
+      }}
     >
       {/* Animated background elements */}
       <div className="absolute inset-0 bg-black/10"></div>
@@ -33,6 +42,9 @@ const Header: React.FC<HeaderProps> = ({
         <div className="absolute top-20 right-20 w-1 h-1 bg-white/40 rounded-full animate-bounce-gentle"></div>
         <div className="absolute bottom-10 left-1/4 w-1.5 h-1.5 bg-white/25 rounded-full animate-pulse-slow"></div>
         <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-white/35 rounded-full animate-float animation-delay-1000"></div>
+        <div className="absolute top-1/3 left-1/3 w-1 h-1 bg-white/20 rounded-full animate-float animation-delay-2000"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-white/15 rounded-full animate-pulse-slow animation-delay-1500"></div>
+        <div className="absolute top-2/3 left-2/3 w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce-gentle animation-delay-500"></div>
       </div>
 
       <div className="container mx-auto px-4 py-6 relative z-10">
@@ -63,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({
 
             <div className="space-y-2 fade-in">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg hover:shadow-glow transition-all duration-300 transform hover:scale-105">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg hover:shadow-glow transition-all duration-300 transform hover:scale-105 animate-rotate-slow">
                   <span className="text-white text-2xl font-bold">N</span>
                 </div>
                 <div>
