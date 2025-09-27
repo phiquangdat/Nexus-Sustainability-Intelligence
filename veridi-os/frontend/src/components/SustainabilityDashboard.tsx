@@ -149,180 +149,233 @@ export const SustainabilityDashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Sustainability Intelligence Dashboard
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Real-time view of key power-sector metrics for net-zero by 2050
-            (IPCC 1.5°C)
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            className={`px-4 py-2 rounded font-medium flex items-center gap-2 ${
-              simulatorRunning
-                ? "bg-red-500 hover:bg-red-600 text-white"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
-            }`}
-            onClick={toggleSimulator}
-          >
-            <div
-              className={`w-4 h-4 ${
-                simulatorRunning ? "bg-white rounded" : "bg-white rounded"
-              }`}
-            ></div>
-            {simulatorRunning ? "Stop Simulator" : "Start Simulator"}
-          </button>
-          <button
-            className="px-4 py-2 border border-gray-300 rounded font-medium flex items-center gap-2 hover:bg-gray-50"
-            onClick={generateTestData}
-            disabled={loading}
-          >
-            <div
-              className={`w-4 h-4 ${
-                loading
-                  ? "animate-spin bg-gray-500 rounded"
-                  : "bg-gray-500 rounded"
-              }`}
-            ></div>
-            Generate Test Data
-          </button>
-        </div>
-      </div>
-
-      {/* Status Alert */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-blue-500 rounded"></div>
-          <p className="text-blue-800 text-sm">
-            This prototype demonstrates integrated sustainability metrics for
-            electricity/heat, enabling clear reporting and analysis. Data are
-            simulated for demonstration purposes.
-          </p>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium">CO₂ Intensity</h3>
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-          </div>
-          <div className="text-2xl font-bold">
-            {kpis.co2Intensity.toFixed(1)}
-          </div>
-          <p className="text-xs text-gray-500">gCO₂ per kWh</p>
-          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded mt-2">
-            Lower is better
-          </span>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium">Renewable Share</h3>
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-          </div>
-          <div className="text-2xl font-bold">
-            {kpis.renewableShare.toFixed(1)}%
-          </div>
-          <p className="text-xs text-gray-500">of total generation</p>
-          <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs rounded mt-2">
-            Higher is better
-          </span>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium">Net-zero Alignment</h3>
-            <div className="w-4 h-4 bg-purple-500 rounded"></div>
-          </div>
-          <div className="text-2xl font-bold">
-            {kpis.netZeroAlignment.toFixed(0)}%
-          </div>
-          <p className="text-xs text-gray-500">vs 2050 pathway</p>
-          <span
-            className={`inline-block px-2 py-1 text-xs rounded mt-2 ${
-              kpis.netZeroAlignment >= 100
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {kpis.netZeroAlignment >= 100 ? "On track" : "Behind"}
-          </span>
-        </div>
-      </div>
-
-      {/* Goal Tracker */}
-      <GoalTracker />
-
-      {/* Main Content Tabs */}
-      <div className="space-y-4">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: "overview", label: "Overview" },
-              { id: "co2-intensity", label: "CO₂ Intensity" },
-              { id: "generation-mix", label: "Generation Mix" },
-              { id: "net-zero", label: "Net-zero Alignment" },
-              { id: "scatter", label: "Correlation Analysis" },
-            ].map((tab) => (
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 ${className}`}>
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">🌱</span>
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                    Sustainability Intelligence
+                  </h1>
+                  <p className="text-gray-600 text-lg">
+                    Real-time monitoring of CO₂ emissions, renewable energy, and net-zero progress
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                onClick={toggleSimulator}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                  simulatorRunning
+                    ? "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
+                    : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
                 }`}
               >
-                {tab.label}
+                <span className="flex items-center space-x-2">
+                  <span>{simulatorRunning ? "⏹️" : "▶️"}</span>
+                  <span>{simulatorRunning ? "Stop Simulator" : "Start Simulator"}</span>
+                </span>
               </button>
-            ))}
-          </nav>
+              <button
+                onClick={generateTestData}
+                disabled={loading}
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                <span className="flex items-center space-x-2">
+                  <span className={loading ? "animate-spin" : ""}>📊</span>
+                  <span>Generate Test Data</span>
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          {activeTab === "overview" && (
-            <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <CO2IntensityChart data={chartData.co2Data} loading={loading} />
-                <GenerationMixChart
-                  data={chartData.genData}
-                  loading={loading}
-                />
+        {/* Status Alert */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm">ℹ️</span>
+            </div>
+            <p className="text-blue-800 text-base font-medium">
+              This prototype demonstrates integrated sustainability metrics for electricity/heat, enabling clear reporting and analysis. Data are simulated for demonstration purposes.
+            </p>
+          </div>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-700">CO₂ Intensity</h3>
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white text-xl">🌍</span>
               </div>
-              <NetZeroAlignmentChart
-                data={chartData.nzData}
-                loading={loading}
-              />
-            </>
-          )}
+            </div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              {kpis.co2Intensity.toFixed(1)}
+            </div>
+            <p className="text-sm text-gray-500 mb-4">gCO₂ per kWh</p>
+            <div className="flex items-center justify-between">
+              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                Lower is better
+              </span>
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm">📉</span>
+              </div>
+            </div>
+          </div>
 
-          {activeTab === "co2-intensity" && (
-            <CO2IntensityChart data={chartData.co2Data} loading={loading} />
-          )}
-          {activeTab === "generation-mix" && (
-            <GenerationMixChart data={chartData.genData} loading={loading} />
-          )}
-          {activeTab === "net-zero" && (
-            <NetZeroAlignmentChart data={chartData.nzData} loading={loading} />
-          )}
-          {activeTab === "scatter" && (
-            <ScatterChart data={chartData.scatterData} loading={loading} />
-          )}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-700">Renewable Share</h3>
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white text-xl">🌱</span>
+              </div>
+            </div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              {kpis.renewableShare.toFixed(1)}%
+            </div>
+            <p className="text-sm text-gray-500 mb-4">of total generation</p>
+            <div className="flex items-center justify-between">
+              <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                Higher is better
+              </span>
+              <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm">📈</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-700">Net-zero Alignment</h3>
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white text-xl">🎯</span>
+              </div>
+            </div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              {kpis.netZeroAlignment.toFixed(0)}%
+            </div>
+            <p className="text-sm text-gray-500 mb-4">vs 2050 pathway</p>
+            <div className="flex items-center justify-between">
+              <span
+                className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
+                  kpis.netZeroAlignment >= 100
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {kpis.netZeroAlignment >= 100 ? "On track" : "Behind"}
+              </span>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                kpis.netZeroAlignment >= 100 
+                  ? "bg-gradient-to-r from-green-400 to-green-500" 
+                  : "bg-gradient-to-r from-red-400 to-red-500"
+              }`}>
+                <span className="text-white text-sm">
+                  {kpis.netZeroAlignment >= 100 ? "✅" : "⚠️"}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div className="text-center text-sm text-gray-500">
-        Last updated: {lastUpdate ? lastUpdate.toLocaleString() : "Never"} |
-        Simulator: {simulatorRunning ? "Running" : "Stopped"} | Data source:{" "}
-        {"Mock Data"}
+        {/* Goal Tracker */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+          <GoalTracker />
+        </div>
+
+        {/* Main Content Tabs */}
+        <div className="space-y-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-2">
+            <nav className="flex space-x-2">
+              {[
+                { id: "overview", label: "Overview", icon: "📊" },
+                { id: "co2-intensity", label: "CO₂ Intensity", icon: "🌍" },
+                { id: "generation-mix", label: "Generation Mix", icon: "⚡" },
+                { id: "net-zero", label: "Net-zero Alignment", icon: "🎯" },
+                { id: "scatter", label: "Correlation Analysis", icon: "📈" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                    activeTab === tab.id
+                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          <div className="space-y-6">
+            {activeTab === "overview" && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                    <CO2IntensityChart data={chartData.co2Data} loading={loading} />
+                  </div>
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                    <GenerationMixChart data={chartData.genData} loading={loading} />
+                  </div>
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                  <NetZeroAlignmentChart data={chartData.nzData} loading={loading} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === "co2-intensity" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                <CO2IntensityChart data={chartData.co2Data} loading={loading} />
+              </div>
+            )}
+            {activeTab === "generation-mix" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                <GenerationMixChart data={chartData.genData} loading={loading} />
+              </div>
+            )}
+            {activeTab === "net-zero" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                <NetZeroAlignmentChart data={chartData.nzData} loading={loading} />
+              </div>
+            )}
+            {activeTab === "scatter" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                <ScatterChart data={chartData.scatterData} loading={loading} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+          <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Last updated: {lastUpdate ? lastUpdate.toLocaleString() : "Never"}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${simulatorRunning ? "bg-green-500 animate-pulse" : "bg-gray-400"}`}></div>
+              <span>Simulator: {simulatorRunning ? "Running" : "Stopped"}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span>Data source: Mock Data</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

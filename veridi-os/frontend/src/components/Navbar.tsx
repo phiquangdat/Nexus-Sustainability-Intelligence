@@ -104,16 +104,19 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200">
+    <nav className="bg-white/90 backdrop-blur-sm shadow-xl border-b border-gray-200/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-20">
           {/* Logo and brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2" onClick={handleLinkClick}>
-              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">V</span>
+            <Link to="/" className="flex items-center space-x-3" onClick={handleLinkClick}>
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">V</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Veridi OS</span>
+              <div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Veridi OS</span>
+                <p className="text-xs text-gray-500 -mt-1">Sustainability Intelligence</p>
+              </div>
             </Link>
           </div>
 
@@ -125,16 +128,16 @@ const Navbar = () => {
                   <>
                     <button
                       onClick={() => handleDropdownToggle(item.id)}
-                      className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
                         isActive(item.href) || activeDropdown === item.id
-                          ? 'text-green-600 bg-green-50'
-                          : 'text-gray-700 hover:text-green-600 hover:bg-gray-50'
+                          ? 'text-white bg-gradient-to-r from-green-500 to-blue-600 shadow-lg transform scale-105'
+                          : 'text-gray-700 hover:text-green-600 hover:bg-gray-100 hover:shadow-md'
                       }`}
                     >
-                      <span>{item.icon}</span>
+                      <span className="text-lg">{item.icon}</span>
                       <span>{item.label}</span>
                       <svg
-                        className={`w-4 h-4 transition-transform ${
+                        className={`w-4 h-4 transition-transform duration-300 ${
                           activeDropdown === item.id ? 'rotate-180' : ''
                         }`}
                         fill="none"
@@ -147,20 +150,20 @@ const Navbar = () => {
 
                     {/* Dropdown menu */}
                     {activeDropdown === item.id && (
-                      <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-                        <div className="py-1">
+                      <div className="absolute top-full left-0 mt-2 w-64 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 z-50 overflow-hidden">
+                        <div className="py-2">
                           {item.children.map((child) => (
                             <Link
                               key={child.id}
                               to={child.href}
                               onClick={handleLinkClick}
-                              className={`flex items-center space-x-2 px-4 py-2 text-sm transition-colors ${
+                              className={`flex items-center space-x-3 px-6 py-3 text-sm font-medium transition-all duration-300 ${
                                 isActive(child.href)
-                                  ? 'text-green-600 bg-green-50'
+                                  ? 'text-white bg-gradient-to-r from-green-500 to-blue-600 shadow-lg'
                                   : 'text-gray-700 hover:text-green-600 hover:bg-gray-50'
                               }`}
                             >
-                              <span>{child.icon}</span>
+                              <span className="text-lg">{child.icon}</span>
                               <span>{child.label}</span>
                             </Link>
                           ))}
@@ -172,13 +175,13 @@ const Navbar = () => {
                   <Link
                     to={item.href}
                     onClick={handleLinkClick}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
                       isActive(item.href)
-                        ? 'text-green-600 bg-green-50'
-                        : 'text-gray-700 hover:text-green-600 hover:bg-gray-50'
+                        ? 'text-white bg-gradient-to-r from-green-500 to-blue-600 shadow-lg transform scale-105'
+                        : 'text-gray-700 hover:text-green-600 hover:bg-gray-100 hover:shadow-md'
                     }`}
                   >
-                    <span>{item.icon}</span>
+                    <span className="text-lg">{item.icon}</span>
                     <span>{item.label}</span>
                   </Link>
                 )}
