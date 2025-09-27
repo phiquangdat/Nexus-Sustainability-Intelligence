@@ -2,9 +2,10 @@ openapi: 3.0.3
 info:
   title: Veridi OS API
   description: |
-    The Veridi OS API provides endpoints for accessing power plant data and generating sustainability reports. 
-    This RESTful API serves as the backend for the Veridi OS sustainability intelligence platform.
-  version: 1.0.0
+    The Veridi OS API provides comprehensive endpoints for accessing power plant data, generating sustainability reports, 
+    and managing real-time emissions data. This RESTful API integrates with Supabase for enterprise-grade database 
+    operations while maintaining backward compatibility with mock data fallback.
+  version: 2.0.0
   contact:
     name: Veridi OS Development Team
     email: support@veridi-os.com
@@ -19,10 +20,29 @@ servers:
     description: Production server
 
 paths:
-  /health:
+  /:
+    get:
+      summary: Root Endpoint
+      description: Basic API information and database status
+      operationId: getRoot
+      tags:
+        - System
+      responses:
+        "200":
+          description: API is running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RootResponse"
+              example:
+                message: "Veridi OS Backend API is running!"
+                database: "Supabase"
+                timestamp: "2024-09-27T14:30:00.000Z"
+
+  /api/health:
     get:
       summary: Health Check
-      description: Check if the API server is running
+      description: Comprehensive health check with database connection status
       operationId: getHealth
       tags:
         - System
@@ -36,31 +56,48 @@ paths:
               example:
                 status: "OK"
                 timestamp: "2024-09-27T14:30:00.000Z"
+                database:
+                  connected: true
+                  message: "Database connection successful"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
-  /:
+  /health:
     get:
-      summary: Root Endpoint
-      description: Basic API information and status
-      operationId: getRoot
+      summary: Legacy Health Check
+      description: Simple health check for backward compatibility
+      operationId: getLegacyHealth
       tags:
         - System
       responses:
         "200":
-          description: API is running
+          description: Server is healthy
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RootResponse"
-              example:
-                message: "Veridi OS Backend API is running!"
+                $ref: "#/components/schemas/LegacyHealthResponse"
 
   /api/data:
     get:
       summary: Get Power Plant Data
-      description: Retrieve all power plant operational data
+      description: Retrieve power plant operational data from the database
       operationId: getPowerPlantData
       tags:
         - Power Plant Data
+      parameters:
+        - name: limit
+          in: query
+          description: Number of records to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+            default: 1000
       responses:
         "200":
           description: Data retrieved successfully
@@ -70,27 +107,201 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/PowerPlantData"
-              example:
-                - timestamp: "2024-09-20T00:00:00.000Z"
-                  plant_id: "Vaasa-Plant-A"
-                  fuel_type: "Natural Gas"
-                  fuel_consumed_liters: 3250.45
-                  energy_output_mwh: 1425.30
-                  co2_emissions_tonnes: 650.09
-                - timestamp: "2024-09-20T01:00:00.000Z"
-                  plant_id: "Vaasa-Plant-B"
-                  fuel_type: "HFO"
-                  fuel_consumed_liters: 4100.20
-                  energy_output_mwh: 1640.08
-                  co2_emissions_tonnes: 1230.06
+        "500":
+          description: Database error (falls back to mock data)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      summary: Insert Power Plant Data
+      description: Add new power plant data record
+      operationId: insertPowerPlantData
+      tags:
+        - Power Plant Data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PowerPlantDataInput"
+            example:
+              plant_id: "Vaasa-Plant-A"
+              timestamp: "2024-09-20T00:00:00.000Z"
+              fuel_consumed_liters: 3250.45
+              energy_output_mwh: 1425.3
+              co2_emissions_tonnes: 650.09
+      responses:
+        "201":
+          description: Record created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PowerPlantData"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Database not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/plants/summary:
+    get:
+      summary: Get Power Plants Summary
+      description: Get aggregated power plant data and statistics
+      operationId: getPowerPlantsSummary
+      tags:
+        - Power Plant Data
+      responses:
+        "200":
+          description: Summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PowerPlantSummary"
+        "503":
+          description: Database not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/plants/{plantId}/emissions:
+    get:
+      summary: Get Plant Emissions Summary
+      description: Get emissions summary for a specific power plant
+      operationId: getPlantEmissionsSummary
+      tags:
+        - Power Plant Data
+      parameters:
+        - name: plantId
+          in: path
+          description: Power plant identifier
+          required: true
+          schema:
+            type: string
+          example: "Vaasa-Plant-A"
+        - name: hours
+          in: query
+          description: Hours back to analyze
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 168
+            default: 24
+      responses:
+        "200":
+          description: Summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlantEmissionsSummary"
+        "404":
+          description: Plant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Database not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/emissions/recent:
+    get:
+      summary: Get Recent Emissions
+      description: Get recent emissions data from the last 24 hours
+      operationId: getRecentEmissions
+      tags:
+        - Emissions
+      parameters:
+        - name: limit
+          in: query
+          description: Number of records to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        "200":
+          description: Recent emissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecentEmissions"
+        "503":
+          description: Database not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /api/reports/eu-ets:
     get:
-      summary: Generate EU ETS Report
-      description: Generate an automated EU ETS compliance report
-      operationId: getEUETSReport
+      summary: Get EU ETS Reports
+      description: Retrieve all EU ETS compliance reports
+      operationId: getEUETSReports
       tags:
         - Reports
+      parameters:
+        - name: limit
+          in: query
+          description: Number of reports to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+      responses:
+        "200":
+          description: Reports retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EUETSReport"
+        "503":
+          description: Database not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      summary: Generate EU ETS Report
+      description: Generate a new EU ETS compliance report
+      operationId: generateEUETSReport
+      tags:
+        - Reports
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EUETSReportRequest"
+            example:
+              startDate: "2024-07-01"
+              endDate: "2024-10-01"
       responses:
         "200":
           description: Report generated successfully
@@ -98,121 +309,299 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EUETSReport"
-              example:
-                total_emissions_tonnes: 18547.32
-                reporting_period: "Q3 2024"
-                status: "Compliant"
+        "400":
+          description: Invalid date format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Report generation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
-    HealthResponse:
-      type: object
-      required:
-        - status
-        - timestamp
-      properties:
-        status:
-          type: string
-          enum: [OK]
-          description: Health status
-        timestamp:
-          type: string
-          format: date-time
-          description: Current server timestamp
-
     RootResponse:
       type: object
-      required:
-        - message
       properties:
         message:
           type: string
-          description: API status message
+          example: "Veridi OS Backend API is running!"
+        database:
+          type: string
+          enum: ["Supabase", "Mock Data"]
+          example: "Supabase"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-09-27T14:30:00.000Z"
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ["OK", "ERROR"]
+          example: "OK"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-09-27T14:30:00.000Z"
+        database:
+          type: object
+          properties:
+            connected:
+              type: boolean
+              example: true
+            message:
+              type: string
+              example: "Database connection successful"
+
+    LegacyHealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "OK"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-09-27T14:30:00.000Z"
+        database:
+          type: string
+          enum: ["Supabase", "Mock Data"]
+          example: "Supabase"
 
     PowerPlantData:
       type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "uuid-1234-5678-9abc"
+        plant_id:
+          type: string
+          example: "Vaasa-Plant-A"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-09-20T00:00:00.000Z"
+        fuel_consumed_liters:
+          type: number
+          format: float
+          example: 3250.45
+        energy_output_mwh:
+          type: number
+          format: float
+          example: 1425.3
+        co2_emissions_tonnes:
+          type: number
+          format: float
+          example: 650.09
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-09-20T00:00:00.000Z"
+        power_plants:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "Vaasa-Plant-A"
+            name:
+              type: string
+              example: "Vaasa Plant A"
+            fuel_type:
+              type: string
+              enum: ["Natural Gas", "HFO", "Coal", "Renewable"]
+              example: "Natural Gas"
+
+    PowerPlantDataInput:
+      type: object
       required:
-        - timestamp
         - plant_id
-        - fuel_type
+        - timestamp
         - fuel_consumed_liters
         - energy_output_mwh
         - co2_emissions_tonnes
       properties:
+        plant_id:
+          type: string
+          example: "Vaasa-Plant-A"
         timestamp:
           type: string
           format: date-time
-          description: ISO 8601 timestamp of the data point
-        plant_id:
-          type: string
-          description: Unique identifier for the power plant
-          example: "Vaasa-Plant-A"
-        fuel_type:
-          type: string
-          enum: [Natural Gas, HFO]
-          description: Type of fuel used
+          example: "2024-09-20T00:00:00.000Z"
         fuel_consumed_liters:
           type: number
           format: float
-          description: Amount of fuel consumed in liters
+          example: 3250.45
         energy_output_mwh:
           type: number
           format: float
-          description: Energy output in megawatt-hours
+          example: 1425.3
         co2_emissions_tonnes:
           type: number
           format: float
-          description: CO2 emissions in tonnes
+          example: 650.09
 
-    EUETSReport:
+    PowerPlantSummary:
       type: object
-      required:
-        - total_emissions_tonnes
-        - reporting_period
-        - status
       properties:
-        total_emissions_tonnes:
+        id:
+          type: string
+          format: uuid
+          example: "uuid-plant-1"
+        name:
+          type: string
+          example: "Vaasa Plant A"
+        location:
+          type: string
+          example: "Vaasa, Finland"
+        fuel_type:
+          type: string
+          example: "Natural Gas"
+        capacity_mw:
           type: number
           format: float
-          description: Total CO2 emissions for the period in tonnes
-        reporting_period:
-          type: string
-          description: The reporting period
-          example: "Q3 2024"
-        status:
-          type: string
-          enum: [Compliant, Non-Compliant]
-          description: Compliance status
-
-    ErrorResponse:
-      type: object
-      required:
-        - error
-        - status
-        - timestamp
-      properties:
-        error:
-          type: string
-          description: Error message
-        status:
+          example: 150.0
+        data_points:
           type: integer
-          description: HTTP status code
+          example: 168
+        total_energy_output:
+          type: number
+          format: float
+          example: 245000.5
+        total_co2_emissions:
+          type: number
+          format: float
+          example: 122500.25
+        avg_energy_output:
+          type: number
+          format: float
+          example: 1458.33
+        avg_co2_emissions:
+          type: number
+          format: float
+          example: 729.17
+        last_data_timestamp:
+          type: string
+          format: date-time
+          example: "2024-09-20T23:00:00.000Z"
+
+    PlantEmissionsSummary:
+      type: object
+      properties:
+        plant_name:
+          type: string
+          example: "Vaasa Plant A"
+        fuel_type:
+          type: string
+          example: "Natural Gas"
+        total_emissions:
+          type: number
+          format: float
+          example: 15600.25
+        total_energy:
+          type: number
+          format: float
+          example: 31200.5
+        avg_emissions_per_mwh:
+          type: number
+          format: float
+          example: 0.5
+        data_points:
+          type: integer
+          example: 24
+
+    RecentEmissions:
+      type: object
+      properties:
+        plant_name:
+          type: string
+          example: "Vaasa Plant A"
+        fuel_type:
+          type: string
+          example: "Natural Gas"
         timestamp:
           type: string
           format: date-time
-          description: Error timestamp
+          example: "2024-09-20T23:00:00.000Z"
+        co2_emissions_tonnes:
+          type: number
+          format: float
+          example: 650.09
+        energy_output_mwh:
+          type: number
+          format: float
+          example: 1425.3
+        fuel_consumed_liters:
+          type: number
+          format: float
+          example: 3250.45
 
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: JWT token authentication (planned for future implementation)
+    EUETSReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "uuid-report-1234"
+        reporting_period:
+          type: string
+          example: "Q3 2024"
+        total_emissions_tonnes:
+          type: number
+          format: float
+          example: 15420.567
+        status:
+          type: string
+          enum: ["Compliant", "Non-Compliant", "Pending"]
+          example: "Compliant"
+        generated_at:
+          type: string
+          format: date-time
+          example: "2024-09-27T14:30:00.000Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-09-27T14:30:00.000Z"
+
+    EUETSReportRequest:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+          example: "2024-07-01"
+        endDate:
+          type: string
+          format: date
+          example: "2024-10-01"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error message"
+        message:
+          type: string
+          example: "Detailed error description"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-09-27T14:30:00.000Z"
 
 tags:
   - name: System
     description: System health and status endpoints
   - name: Power Plant Data
     description: Power plant operational data endpoints
+  - name: Emissions
+    description: Emissions monitoring and analysis endpoints
   - name: Reports
-    description: Sustainability reporting endpoints
+    description: Compliance and sustainability report endpoints

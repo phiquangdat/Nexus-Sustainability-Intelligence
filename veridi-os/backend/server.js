@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+const path = require("path");
 const mockData = require("./mockData");
 const DatabaseService = require("./services/databaseService");
 
@@ -15,11 +18,31 @@ app.use(express.json());
 
 // Request logging middleware
 app.use((req, res, next) => {
-  if (process.env.ENABLE_LOGGING === 'true') {
+  if (process.env.ENABLE_LOGGING === "true") {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   }
   next();
 });
+
+// Swagger UI setup
+const swaggerDocument = YAML.load(path.join(__dirname, "openapi.yaml"));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Veridi OS API Documentation",
+    customfavIcon: "/favicon.ico",
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      docExpansion: "list",
+      filter: true,
+      showExtensions: true,
+      showCommonExtensions: true,
+    },
+  })
+);
 
 // Routes
 app.get("/", (req, res) => {
@@ -27,7 +50,13 @@ app.get("/", (req, res) => {
     message: "Veridi OS Backend API is running!",
     database: dbService.isSupabaseAvailable() ? "Supabase" : "Mock Data",
     timestamp: new Date().toISOString(),
+    documentation: "Visit /api-docs for interactive API documentation",
   });
+});
+
+// Redirect to API docs
+app.get("/docs", (req, res) => {
+  res.redirect("/api-docs");
 });
 
 // Database connection test endpoint
