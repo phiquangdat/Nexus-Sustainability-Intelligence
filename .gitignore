@@ -355,3 +355,10 @@ logs
 .Trashes
 ehthumbs.db
 Thumbs.db
+.env
+data/*.csv
+__pycache__/
+.streamlit/
+.DS_Store
+*.pyc
+
