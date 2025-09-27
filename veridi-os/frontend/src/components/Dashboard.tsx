@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -11,13 +11,15 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import type { ChartData, EnergyData } from "../types";
 import { useAppDispatch, useAppSelector } from "../state/hooks";
 import {
   fetchPowerPlantData,
-  selectPowerPlantData,
+  fetchPowerPlantsSummary,
   selectDataLoading,
   selectDataError,
+  selectDataSummary,
+  selectChartData,
+  selectEnergyData,
 } from "../state/dataSlice";
 import ChartSkeleton from "./ChartSkeleton";
 import DataCardSkeleton from "./DataCardSkeleton";
@@ -25,54 +27,16 @@ import AIInsight from "./AIInsight";
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
-  const data = useAppSelector(selectPowerPlantData);
   const loading = useAppSelector(selectDataLoading);
   const error = useAppSelector(selectDataError);
+  const summaryData = useAppSelector(selectDataSummary);
+  const co2Data = useAppSelector(selectChartData);
+  const energyData = useAppSelector(selectEnergyData);
 
   useEffect(() => {
     dispatch(fetchPowerPlantData());
+    dispatch(fetchPowerPlantsSummary());
   }, [dispatch]);
-
-  // Memoize data processing for better performance
-  const { co2Data, energyData, summaryData } = useMemo(() => {
-    if (!data.length) {
-      return {
-        co2Data: [],
-        energyData: [],
-        summaryData: { totalPoints: 0, totalEnergy: 0, totalEmissions: 0 },
-      };
-    }
-
-    const co2Data: ChartData[] = data.map((item) => ({
-      timestamp: new Date(item.timestamp).toLocaleString(),
-      emissions: item.co2_emissions_tonnes,
-      plant: item.plant_id,
-    }));
-
-    const energyData: EnergyData[] = data.reduce((acc: EnergyData[], item) => {
-      const existing = acc.find((d) => d.plant === item.plant_id);
-      if (existing) {
-        existing.energy += item.energy_output_mwh;
-      } else {
-        acc.push({
-          plant: item.plant_id,
-          energy: item.energy_output_mwh,
-        });
-      }
-      return acc;
-    }, []);
-
-    const summaryData = {
-      totalPoints: data.length,
-      totalEnergy: data.reduce((sum, item) => sum + item.energy_output_mwh, 0),
-      totalEmissions: data.reduce(
-        (sum, item) => sum + item.co2_emissions_tonnes,
-        0
-      ),
-    };
-
-    return { co2Data, energyData, summaryData };
-  }, [data]);
 
   if (loading) {
     return (

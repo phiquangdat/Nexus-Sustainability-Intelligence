@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { mockPowerPlantData, mockEUETSReport, generateMockData } from '../mockData';
+import { mockPowerPlantData, mockEUETSReport, generateMockData } from '../mockDataNew';
 import type { PowerPlantData, EUETSReport } from '../types';
 
 // Configuration for mock data usage
