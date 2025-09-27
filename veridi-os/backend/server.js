@@ -229,6 +229,231 @@ app.get("/api/plants/:plantId/emissions", async (req, res) => {
   }
 });
 
+// Sustainability Intelligence Endpoints
+
+// Get CO2 intensity data
+app.get("/api/sustainability/co2-intensity", async (req, res) => {
+  try {
+    if (dbService.isSupabaseAvailable()) {
+      const data = await dbService.getCo2IntensityData(
+        parseInt(req.query.limit) || 1000,
+        req.query.order || "timestamp"
+      );
+      res.json(data);
+    } else {
+      // Mock CO2 intensity data
+      const mockData = generateMockCo2IntensityData(parseInt(req.query.limit) || 1000);
+      res.json(mockData);
+    }
+  } catch (error) {
+    console.error("Error fetching CO2 intensity data:", error);
+    res.status(500).json({ error: "Failed to fetch CO2 intensity data" });
+  }
+});
+
+// Get generation mix data
+app.get("/api/sustainability/generation-mix", async (req, res) => {
+  try {
+    if (dbService.isSupabaseAvailable()) {
+      const data = await dbService.getGenerationMixData(
+        parseInt(req.query.limit) || 1000,
+        req.query.order || "timestamp"
+      );
+      res.json(data);
+    } else {
+      // Mock generation mix data
+      const mockData = generateMockGenerationMixData(parseInt(req.query.limit) || 1000);
+      res.json(mockData);
+    }
+  } catch (error) {
+    console.error("Error fetching generation mix data:", error);
+    res.status(500).json({ error: "Failed to fetch generation mix data" });
+  }
+});
+
+// Get net-zero alignment data
+app.get("/api/sustainability/netzero-alignment", async (req, res) => {
+  try {
+    if (dbService.isSupabaseAvailable()) {
+      const data = await dbService.getNetZeroAlignmentData(
+        parseInt(req.query.limit) || 100,
+        req.query.order || "year"
+      );
+      res.json(data);
+    } else {
+      // Mock net-zero alignment data
+      const mockData = generateMockNetZeroAlignmentData();
+      res.json(mockData);
+    }
+  } catch (error) {
+    console.error("Error fetching net-zero alignment data:", error);
+    res.status(500).json({ error: "Failed to fetch net-zero alignment data" });
+  }
+});
+
+// Get goal tracker metrics
+app.get("/api/sustainability/goal-tracker", async (req, res) => {
+  try {
+    if (dbService.isSupabaseAvailable()) {
+      const data = await dbService.getGoalTrackerMetrics();
+      res.json(data);
+    } else {
+      // Mock goal tracker data
+      const mockData = generateMockGoalTrackerData();
+      res.json(mockData);
+    }
+  } catch (error) {
+    console.error("Error fetching goal tracker metrics:", error);
+    res.status(500).json({ error: "Failed to fetch goal tracker metrics" });
+  }
+});
+
+// Get sustainability KPIs summary
+app.get("/api/sustainability/kpis", async (req, res) => {
+  try {
+    if (dbService.isSupabaseAvailable()) {
+      const data = await dbService.getSustainabilityKPIs();
+      res.json(data);
+    } else {
+      // Mock KPIs data
+      const mockData = generateMockSustainabilityKPIs();
+      res.json(mockData);
+    }
+  } catch (error) {
+    console.error("Error fetching sustainability KPIs:", error);
+    res.status(500).json({ error: "Failed to fetch sustainability KPIs" });
+  }
+});
+
+// Mock data generation functions for sustainability endpoints
+function generateMockCo2IntensityData(limit = 1000) {
+  const data = [];
+  const now = new Date();
+  
+  for (let i = 0; i < limit; i++) {
+    const timestamp = new Date(now.getTime() - (limit - i) * 15 * 60 * 1000); // 15-minute intervals
+    const baseIntensity = 300 + Math.sin(i * 0.1) * 50; // Base trend with variation
+    const randomVariation = (Math.random() - 0.5) * 100; // Random variation
+    const co2Intensity = Math.max(50, baseIntensity + randomVariation); // Minimum 50 g/kWh
+    
+    data.push({
+      id: i + 1,
+      timestamp: timestamp.toISOString(),
+      co2_intensity_g_per_kwh: Math.round(co2Intensity * 10) / 10
+    });
+  }
+  
+  return data;
+}
+
+function generateMockGenerationMixData(limit = 1000) {
+  const data = [];
+  const now = new Date();
+  
+  for (let i = 0; i < limit; i++) {
+    const timestamp = new Date(now.getTime() - (limit - i) * 15 * 60 * 1000); // 15-minute intervals
+    
+    // Generate realistic generation mix with diurnal patterns
+    const hour = timestamp.getHours();
+    const isDaytime = hour >= 6 && hour <= 18;
+    
+    const hydro_mw = 100 + Math.random() * 50;
+    const wind_mw = 50 + Math.random() * 100;
+    const solar_mw = isDaytime ? 20 + Math.random() * 80 : Math.random() * 10;
+    const nuclear_mw = 200 + Math.random() * 20;
+    const fossil_mw = 200 + Math.random() * 100;
+    
+    const total_mw = hydro_mw + wind_mw + solar_mw + nuclear_mw + fossil_mw;
+    const renewable_share_pct = ((hydro_mw + wind_mw + solar_mw) / total_mw) * 100;
+    
+    data.push({
+      id: i + 1,
+      timestamp: timestamp.toISOString(),
+      hydro_mw: Math.round(hydro_mw * 10) / 10,
+      wind_mw: Math.round(wind_mw * 10) / 10,
+      solar_mw: Math.round(solar_mw * 10) / 10,
+      nuclear_mw: Math.round(nuclear_mw * 10) / 10,
+      fossil_mw: Math.round(fossil_mw * 10) / 10,
+      total_mw: Math.round(total_mw * 10) / 10,
+      renewable_share_pct: Math.round(renewable_share_pct * 10) / 10
+    });
+  }
+  
+  return data;
+}
+
+function generateMockNetZeroAlignmentData() {
+  const data = [];
+  const currentYear = new Date().getFullYear();
+  
+  for (let year = 2020; year <= 2050; year += 5) {
+    const yearsFromNow = year - currentYear;
+    const baseEmissions = 45; // Starting emissions in Mt
+    const targetReduction = (year - 2020) / (2050 - 2020); // Linear reduction to 2050
+    
+    const actual_emissions_mt = Math.max(0, baseEmissions * (1 - targetReduction * 0.8) + Math.random() * 5);
+    const target_emissions_mt = Math.max(0, baseEmissions * (1 - targetReduction));
+    const alignment_pct = Math.min(150, (target_emissions_mt / actual_emissions_mt) * 100);
+    
+    data.push({
+      year,
+      actual_emissions_mt: Math.round(actual_emissions_mt * 10) / 10,
+      target_emissions_mt: Math.round(target_emissions_mt * 10) / 10,
+      alignment_pct: Math.round(alignment_pct * 10) / 10
+    });
+  }
+  
+  return data;
+}
+
+function generateMockGoalTrackerData() {
+  return {
+    rai_pct: 108.5,
+    budget: {
+      ytd_tons: 1250000,
+      ytd_budget_tons: 1400000,
+      days_ahead: 12.5
+    },
+    velocity: {
+      v_actual_g_per_kwh_per_yr: 15.2,
+      v_required_g_per_kwh_per_yr: 12.8,
+      on_track: true
+    },
+    pathway: {
+      eta_year: 2048,
+      series: [
+        { year: 2024, target_emissions_mt: 36.0 },
+        { year: 2025, target_emissions_mt: 33.0 },
+        { year: 2030, target_emissions_mt: 25.0 },
+        { year: 2035, target_emissions_mt: 15.0 },
+        { year: 2040, target_emissions_mt: 8.0 },
+        { year: 2045, target_emissions_mt: 3.0 },
+        { year: 2050, target_emissions_mt: 0.0 }
+      ]
+    }
+  };
+}
+
+function generateMockSustainabilityKPIs() {
+  return {
+    co2_intensity: {
+      current: 250.5,
+      trend: "decreasing",
+      change_pct: -5.2
+    },
+    renewable_share: {
+      current: 65.7,
+      trend: "increasing",
+      change_pct: 3.1
+    },
+    netzero_alignment: {
+      current: 109.8,
+      trend: "on_track",
+      change_pct: 2.3
+    }
+  };
+}
+
 // Legacy health check endpoint for backward compatibility
 app.get("/health", (req, res) => {
   res.json({

@@ -71,3 +71,97 @@ export interface RecentEmissions {
   energy_output_mwh: number;
   fuel_consumed_liters: number;
 }
+
+// Sustainability Intelligence Types (from Python prototype)
+export interface Co2IntensityRecord {
+  id: number;
+  timestamp: string;
+  co2_intensity_g_per_kwh: number;
+}
+
+export interface GenerationMixRecord {
+  id: number;
+  timestamp: string;
+  hydro_mw: number;
+  wind_mw: number;
+  solar_mw: number;
+  nuclear_mw: number;
+  fossil_mw: number;
+  total_mw: number;
+  renewable_share_pct: number;
+}
+
+export interface NetZeroAlignmentRecord {
+  year: number;
+  actual_emissions_mt: number;
+  target_emissions_mt: number;
+  alignment_pct: number;
+}
+
+// Goal Tracker Types
+export interface GoalTrackerBudget {
+  ytd_tons: number;
+  ytd_budget_tons: number;
+  days_ahead: number;
+}
+
+export interface GoalTrackerVelocity {
+  v_actual_g_per_kwh_per_yr: number;
+  v_required_g_per_kwh_per_yr: number;
+  on_track: boolean;
+}
+
+export interface GoalTrackerPathway {
+  eta_year?: number;
+  series: Array<{
+    year: number;
+    target_emissions_mt: number;
+  }>;
+}
+
+export interface GoalTracker {
+  rai_pct?: number;
+  budget?: GoalTrackerBudget;
+  velocity?: GoalTrackerVelocity;
+  pathway?: GoalTrackerPathway;
+  error?: string;
+}
+
+// Chart data for sustainability metrics
+export interface SustainabilityChartData {
+  timestamp: string;
+  co2_intensity_g_per_kwh: number;
+  renewable_share_pct: number;
+  hydro_mw: number;
+  wind_mw: number;
+  solar_mw: number;
+  nuclear_mw: number;
+  fossil_mw: number;
+  total_mw: number;
+}
+
+export interface NetZeroChartData {
+  year: number;
+  actual_emissions_mt: number;
+  target_emissions_mt: number;
+  alignment_pct: number;
+}
+
+// KPI Summary Types
+export interface Co2IntensitySummary {
+  count: number;
+  min_gco2_kwh: number;
+  max_gco2_kwh: number;
+  avg_gco2_kwh: number;
+}
+
+export interface GenerationMixSummary {
+  count: number;
+  avg_total_mw: number;
+  avg_renewable_share_pct: number;
+}
+
+export interface NetZeroSummary {
+  count: number;
+  latest_alignment_pct: number;
+}

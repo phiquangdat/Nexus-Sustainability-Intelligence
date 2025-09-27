@@ -7,6 +7,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Navbar from "./components/Navbar";
 import Breadcrumb from "./components/Breadcrumb";
 import RegulationsPage from "./components/RegulationsPage";
+import SustainabilityDashboard from "./pages/SustainabilityDashboard";
+import ScatterPage from "./pages/ScatterPage";
+import NetZeroPage from "./pages/NetZeroPage";
 import "./App.css";
 
 function App() {
@@ -32,6 +35,30 @@ function App() {
               element={
                 <ErrorBoundary>
                   <RegulationsPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/sustainability"
+              element={
+                <ErrorBoundary>
+                  <SustainabilityDashboard />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/sustainability/scatter"
+              element={
+                <ErrorBoundary>
+                  <ScatterPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/sustainability/netzero"
+              element={
+                <ErrorBoundary>
+                  <NetZeroPage />
                 </ErrorBoundary>
               }
             />

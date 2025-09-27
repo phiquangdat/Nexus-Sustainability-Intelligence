@@ -22,6 +22,18 @@ const Navbar = () => {
       icon: '📊'
     },
     {
+      id: 'sustainability',
+      label: 'Sustainability Intelligence',
+      href: '/sustainability',
+      icon: '🌱',
+      children: [
+        { id: 'sustainability-dashboard', label: 'Dashboard', href: '/sustainability', icon: '📊' },
+        { id: 'scatter-analysis', label: 'Renewables vs CO₂', href: '/sustainability/scatter', icon: '📈' },
+        { id: 'netzero-trajectory', label: 'Net-Zero Trajectory', href: '/sustainability/netzero', icon: '🎯' },
+        { id: 'goal-tracker', label: 'Goal Tracker', href: '/sustainability/goal-tracker', icon: '📋' }
+      ]
+    },
+    {
       id: 'regulations',
       label: 'Regulations',
       href: '/regulations',
