@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { useAppDispatch, useAppSelector } from "../../state/hooks";
 import {
   generateEUETSReport,
   fetchEUETSReports,
@@ -66,22 +66,32 @@ const ReportGenerator = () => {
         {/* Reports Summary */}
         {reportsSummary.totalReports > 0 && (
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 className="text-lg font-semibold mb-3 text-gray-800">Reports Summary</h3>
+            <h3 className="text-lg font-semibold mb-3 text-gray-800">
+              Reports Summary
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{reportsSummary.totalReports}</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {reportsSummary.totalReports}
+                </div>
                 <div className="text-sm text-gray-600">Total Reports</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{reportsSummary.compliantReports}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {reportsSummary.compliantReports}
+                </div>
                 <div className="text-sm text-gray-600">Compliant</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{reportsSummary.nonCompliantReports}</div>
+                <div className="text-2xl font-bold text-red-600">
+                  {reportsSummary.nonCompliantReports}
+                </div>
                 <div className="text-sm text-gray-600">Non-Compliant</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-600">{reportsSummary.averageEmissions.toFixed(1)} t</div>
+                <div className="text-2xl font-bold text-gray-600">
+                  {reportsSummary.averageEmissions.toFixed(1)} t
+                </div>
                 <div className="text-sm text-gray-600">Avg Emissions</div>
               </div>
             </div>

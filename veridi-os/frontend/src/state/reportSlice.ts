@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { EUETSReport } from "../types";
-import { dataService } from "../services/dataService";
+import { dataService } from "../services/api/dataService";
 
 // Define the state interface
 interface ReportState {

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { PowerPlantData, PowerPlantSummary } from "../types";
-import { dataService } from "../services/dataService";
+import { dataService } from "../services/api/dataService";
 
 // Define the state interface
 interface DataState {

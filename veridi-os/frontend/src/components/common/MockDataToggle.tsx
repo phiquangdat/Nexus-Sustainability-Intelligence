@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { mockDataService } from "../services/mockDataService";
+import { mockDataService } from "../../services/api/mockDataService";
 
 const MockDataToggle = () => {
   const [useMockData, setUseMockData] = useState(false);

@@ -1,35 +1,28 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 
 // Higher-order component for memoization
-export const withMemo = <P extends object>(
-  Component: React.ComponentType<P>,
-  areEqual?: (prevProps: P, nextProps: P) => boolean
-) => {
+export const withMemo = (Component: React.ComponentType<any>, areEqual?: (prevProps: any, nextProps: any) => boolean) => {
   return memo(Component, areEqual);
 };
 
 // Hook for expensive calculations
-export const useExpensiveCalculation = <T>(
-  calculation: () => T,
-  dependencies: React.DependencyList
-): T => {
+export const useExpensiveCalculation = (calculation: () => any, dependencies: React.DependencyList) => {
   return useMemo(calculation, dependencies);
 };
 
 // Hook for memoized callbacks
-export const useMemoizedCallback = <T extends (...args: any[]) => any>(
-  callback: T,
-  dependencies: React.DependencyList
-): T => {
-  return useMemo(() => callback, dependencies) as T;
+export const useMemoizedCallback = (callback: (...args: any[]) => any, dependencies: React.DependencyList) => {
+  return useCallback(callback, dependencies);
 };
 
 // Component wrapper for conditional rendering optimization
-export const ConditionalRender = memo<{
+interface ConditionalRenderProps {
   condition: boolean;
   children: React.ReactNode;
   fallback?: React.ReactNode;
-}>(({ condition, children, fallback = null }) => {
+}
+
+export const ConditionalRender = memo(({ condition, children, fallback = null }: ConditionalRenderProps) => {
   return condition ? <>{children}</> : <>{fallback}</>;
 });
 

@@ -11,7 +11,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { useAppDispatch, useAppSelector } from "../../state/hooks";
 import {
   fetchPowerPlantData,
   fetchPowerPlantsSummary,
@@ -20,7 +20,7 @@ import {
   selectDataSummary,
   selectChartData,
   selectEnergyData,
-} from "../state/dataSlice";
+} from "../../state/dataSlice";
 import ChartSkeleton from "./ChartSkeleton";
 import DataCardSkeleton from "./DataCardSkeleton";
 import AIInsight from "./AIInsight";

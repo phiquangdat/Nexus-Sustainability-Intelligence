@@ -1,88 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { analysisService } from '../services/analysisService';
+import React, { useState, useEffect } from "react";
+import {
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { analysisService } from "../services/api/analysisService";
 
-interface ScatterDataPoint {
-  renewable_share_pct: number;
-  co2_intensity_g_per_kwh: number;
-  timestamp: string;
+interface ScatterData {
+  renewable_percentage: number;
+  co2_intensity: number;
+  plant_name: string;
+  region: string;
 }
 
 const ScatterPage: React.FC = () => {
-  const [data, setData] = useState<ScatterDataPoint[]>([]);
+  const [data, setData] = useState<ScatterData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<'24h' | '7d'>('24h');
 
   useEffect(() => {
     loadScatterData();
-  }, [timeRange]);
+  }, []);
 
   const loadScatterData = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const limit = timeRange === '24h' ? 96 : 96 * 7;
-      const analysis = await analysisService.getAnalysis(limit);
-      
-      const co2Data = analysis.rawData.co2 || [];
-      const genData = analysis.rawData.generation_mix || [];
-      
-      // Merge data on timestamp
-      const mergedData: ScatterDataPoint[] = [];
-      const co2Map = new Map(co2Data.map((item: any) => [item.timestamp, item]));
-      
-      genData.forEach((genItem: any) => {
-        const co2Item = co2Map.get(genItem.timestamp);
-        if (co2Item) {
-          mergedData.push({
-            renewable_share_pct: genItem.renewable_share_pct,
-            co2_intensity_g_per_kwh: co2Item.co2_intensity_g_per_kwh,
-            timestamp: genItem.timestamp
-          });
-        }
-      });
-      
-      setData(mergedData);
+
+      const analysis = await analysisService.getAnalysis(200);
+      const scatterData = analysis.rawData.scatter_data || [];
+
+      setData(scatterData);
     } catch (err) {
-      console.error('Error loading scatter data:', err);
-      setError('Failed to load correlation data');
+      console.error("Error loading scatter data:", err);
+      setError("Failed to load renewables vs CO₂ data");
     } finally {
       setLoading(false);
     }
   };
 
-  // Calculate trend line (simple linear regression)
-  const calculateTrendLine = () => {
-    if (data.length < 2) return [];
-    
-    const n = data.length;
-    const sumX = data.reduce((sum, point) => sum + point.renewable_share_pct, 0);
-    const sumY = data.reduce((sum, point) => sum + point.co2_intensity_g_per_kwh, 0);
-    const sumXY = data.reduce((sum, point) => sum + point.renewable_share_pct * point.co2_intensity_g_per_kwh, 0);
-    const sumXX = data.reduce((sum, point) => sum + point.renewable_share_pct * point.renewable_share_pct, 0);
-    
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    const intercept = (sumY - slope * sumX) / n;
-    
-    const minX = Math.min(...data.map(d => d.renewable_share_pct));
-    const maxX = Math.max(...data.map(d => d.renewable_share_pct));
-    
-    return [
-      { renewable_share_pct: minX, co2_intensity_g_per_kwh: slope * minX + intercept },
-      { renewable_share_pct: maxX, co2_intensity_g_per_kwh: slope * maxX + intercept }
-    ];
-  };
-
-  const trendLineData = calculateTrendLine();
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-secondary-50/30 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading correlation data...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Loading renewables vs CO₂ data...
+          </p>
         </div>
       </div>
     );
@@ -90,184 +58,276 @@ const ScatterPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-secondary-50/30 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-            <div className="text-red-600 mb-2">
-              <svg className="w-8 h-8 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h3>
-            <p className="text-red-700">{error}</p>
-            <button 
-              onClick={loadScatterData}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          <div className="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg
+              className="w-8 h-8 text-error-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              Retry
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
           </div>
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+            Error Loading Data
+          </h2>
+          <p className="text-neutral-600 dark:text-neutral-400 mb-4">{error}</p>
+          <button onClick={loadScatterData} className="btn-primary">
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-secondary-50/30 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Renewables vs CO₂ Intensity
-          </h1>
-          <p className="text-lg text-gray-600 max-w-3xl">
-            As renewable share increases, CO₂ intensity tends to fall. This view tests the 
-            expected decarbonization signal and supports disclosures linking energy mix to 
-            emissions outcomes.
+        <div className="section-header fade-in">
+          <h1 className="section-title">Renewables vs CO₂ Intensity</h1>
+          <p className="section-subtitle">
+            Correlation analysis showing the relationship between renewable
+            energy percentage and CO₂ intensity across power plants
           </p>
         </div>
 
-        {/* Time Range Selector */}
-        <div className="mb-6">
-          <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">
-              Time Range:
-            </label>
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as '24h' | '7d')}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Select time range"
-            >
-              <option value="24h">Last 24 Hours</option>
-              <option value="7d">Last 7 Days</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Info Panel */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-blue-900 mb-3">
-            How to Read This Chart
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold text-blue-800 mb-2">Axes</h3>
-              <p className="text-sm text-blue-700">
-                X-axis: renewable share (%), Y-axis: CO₂ intensity (g/kWh). 
-                Each point represents a time period's energy mix and emissions intensity.
-              </p>
+        {/* Main Chart */}
+        <div className="glass-card-hover rounded-2xl p-8 card-hover mb-8">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="text-white text-2xl">📈</span>
             </div>
             <div>
-              <h3 className="font-semibold text-blue-800 mb-2">Trend Analysis</h3>
-              <p className="text-sm text-blue-700">
-                Expected negative slope shows decarbonization signal. 
-                Deviations may indicate data quality issues or unusual operations.
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                Scatter Plot Analysis
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Interactive visualization of renewable energy vs emissions
+                correlation
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">
-            Inverse Relationship: Higher Renewables → Lower CO₂ Intensity
-          </h2>
-          
-          {data.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
-                <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Data Available</h3>
-              <p className="text-gray-600">Not enough data points to show correlation.</p>
-            </div>
-          ) : (
+          <div className="chart-container">
             <ResponsiveContainer width="100%" height={500}>
-              <ScatterChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  type="number" 
-                  dataKey="renewable_share_pct" 
-                  name="Renewable Share"
-                  label={{ value: 'Renewable Share (%)', position: 'insideBottom', offset: -5 }}
+              <ScatterChart
+                data={data}
+                margin={{
+                  top: 20,
+                  right: 20,
+                  bottom: 20,
+                  left: 20,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  type="number"
+                  dataKey="renewable_percentage"
+                  name="Renewable %"
+                  unit="%"
+                  stroke="#6b7280"
+                  fontSize={12}
                 />
-                <YAxis 
-                  type="number" 
-                  dataKey="co2_intensity_g_per_kwh" 
+                <YAxis
+                  type="number"
+                  dataKey="co2_intensity"
                   name="CO₂ Intensity"
-                  label={{ value: 'CO₂ Intensity (g/kWh)', angle: -90, position: 'insideLeft' }}
+                  unit=" kg/MWh"
+                  stroke="#6b7280"
+                  fontSize={12}
                 />
-                <Tooltip 
-                  formatter={(value, name) => [
-                    `${Number(value).toFixed(1)} ${name === 'renewable_share_pct' ? '%' : 'g/kWh'}`, 
-                    name === 'renewable_share_pct' ? 'Renewable Share' : 'CO₂ Intensity'
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  }}
+                  formatter={(value: any, name: string) => [
+                    `${value}${name === "Renewable %" ? "%" : " kg/MWh"}`,
+                    name,
                   ]}
-                  labelFormatter={(timestamp) => `Time: ${new Date(timestamp).toLocaleString()}`}
+                  labelFormatter={(label: string, payload: any[]) => {
+                    if (payload && payload[0]) {
+                      return `Plant: ${payload[0].payload.plant_name}`;
+                    }
+                    return "";
+                  }}
                 />
-                <Scatter 
-                  dataKey="co2_intensity_g_per_kwh" 
-                  fill="#3b82f6" 
+                <Scatter
+                  dataKey="co2_intensity"
+                  fill="#22c55e"
                   fillOpacity={0.6}
-                  r={4}
+                  stroke="#16a34a"
+                  strokeWidth={2}
                 />
-                {/* Trend line */}
-                {trendLineData.length === 2 && (
-                  <Scatter 
-                    data={trendLineData}
-                    dataKey="co2_intensity_g_per_kwh"
-                    fill="#ef4444"
-                    fillOpacity={0}
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                    r={0}
-                    line
-                  />
-                )}
               </ScatterChart>
             </ResponsiveContainer>
-          )}
+          </div>
         </div>
 
-        {/* Statistics */}
-        {data.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Data Points</h3>
-              <div className="text-2xl font-bold text-gray-900">{data.length}</div>
-              <p className="text-sm text-gray-600">Time periods analyzed</p>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Avg Renewable Share</h3>
-              <div className="text-2xl font-bold text-gray-900">
-                {(data.reduce((sum, d) => sum + d.renewable_share_pct, 0) / data.length).toFixed(1)}%
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="metric-card">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">
+                Data Points
+              </h3>
+              <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
+                <span className="text-white text-lg">📊</span>
               </div>
-              <p className="text-sm text-gray-600">Over selected period</p>
             </div>
-            
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Avg CO₂ Intensity</h3>
-              <div className="text-2xl font-bold text-gray-900">
-                {(data.reduce((sum, d) => sum + d.co2_intensity_g_per_kwh, 0) / data.length).toFixed(1)} g/kWh
+            <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+              {data.length}
+            </div>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Power plants analyzed
+            </p>
+          </div>
+
+          <div className="metric-card">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">
+                Avg Renewable %
+              </h3>
+              <div className="w-10 h-10 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-xl flex items-center justify-center">
+                <span className="text-white text-lg">🌱</span>
               </div>
-              <p className="text-sm text-gray-600">Over selected period</p>
+            </div>
+            <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+              {data.length > 0
+                ? (
+                    data.reduce(
+                      (sum, item) => sum + item.renewable_percentage,
+                      0
+                    ) / data.length
+                  ).toFixed(1)
+                : "0.0"}
+              %
+            </div>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Average renewable energy
+            </p>
+          </div>
+
+          <div className="metric-card">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">
+                Avg CO₂ Intensity
+              </h3>
+              <div className="w-10 h-10 bg-gradient-to-r from-accent-500 to-accent-600 rounded-xl flex items-center justify-center">
+                <span className="text-white text-lg">🌍</span>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+              {data.length > 0
+                ? (
+                    data.reduce((sum, item) => sum + item.co2_intensity, 0) /
+                    data.length
+                  ).toFixed(1)
+                : "0.0"}
+            </div>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              kg CO₂ per MWh
+            </p>
+          </div>
+        </div>
+
+        {/* Insights */}
+        <div className="glass-card-hover rounded-2xl p-8 card-hover mb-8">
+          <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
+            Key Insights
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-success-500 to-success-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm">✓</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">
+                    Negative Correlation
+                  </h4>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Higher renewable energy percentage correlates with lower CO₂
+                    intensity
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm">📈</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">
+                    Clear Trend
+                  </h4>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    The scatter plot shows a clear downward trend as renewable
+                    percentage increases
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm">🎯</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">
+                    Strategic Value
+                  </h4>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Data supports renewable energy investment decisions and
+                    sustainability goals
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-accent-500 to-accent-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm">📊</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">
+                    Compliance Support
+                  </h4>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Evidence for regulatory compliance and sustainability
+                    reporting requirements
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Data Note */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
           <div className="flex">
-            <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            <svg
+              className="w-5 h-5 text-yellow-400 mt-0.5 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
-            <p className="text-sm text-yellow-800">
-              <strong>Note:</strong> This correlation analysis provides evidence that renewable 
-              integration lowers emissions, supporting climate strategy narratives and 
-              sustainability disclosures.
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <strong>Note:</strong> This correlation analysis provides evidence
+              that renewable integration lowers emissions, supporting climate
+              strategy narratives and sustainability disclosures.
             </p>
           </div>
         </div>

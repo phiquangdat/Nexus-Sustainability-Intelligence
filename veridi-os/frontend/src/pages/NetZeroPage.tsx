@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { analysisService } from "../services/analysisService";
+import { analysisService } from "../services/api/analysisService";
 
 interface NetZeroData {
   year: number;

@@ -1,9 +1,9 @@
 // Enhanced Goal Tracker Component - Integrates Streamlit Home.py goal tracking functionality
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   analysisService,
   type GoalTrackerResult,
-} from "../services/analysisService";
+} from "../../services/api/analysisService";
 
 interface GoalTrackerProps {
   className?: string;
