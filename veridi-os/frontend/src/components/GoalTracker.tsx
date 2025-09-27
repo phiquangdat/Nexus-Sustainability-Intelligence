@@ -1,193 +1,250 @@
-import React from 'react';
-import type { GoalTracker } from '../types';
+// Enhanced Goal Tracker Component - Integrates Streamlit Home.py goal tracking functionality
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  analysisService,
+  type GoalTrackerResult,
+} from "@/services/analysisService";
+import { supabaseService } from "@/services/supabaseService";
+import { AlertCircle, TrendingUp, Calendar, Target } from "lucide-react";
 
 interface GoalTrackerProps {
-  data: GoalTracker;
-  loading?: boolean;
+  className?: string;
 }
 
-const GoalTrackerComponent: React.FC<GoalTrackerProps> = ({ data, loading = false }) => {
+export const GoalTracker: React.FC<GoalTrackerProps> = ({ className }) => {
+  const [goalTrackerData, setGoalTrackerData] =
+    useState<GoalTrackerResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadGoalTrackerData();
+  }, []);
+
+  const loadGoalTrackerData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch data from Supabase
+      const [co2Data, genData, nzData] = await Promise.all([
+        supabaseService.fetchCo2IntensityData(1000),
+        supabaseService.fetchGenerationMixData(1000),
+        supabaseService.fetchNetZeroAlignmentData(100),
+      ]);
+
+      // Compute goal tracker metrics
+      const result = analysisService.computeGoalTracker(
+        co2Data,
+        genData,
+        nzData
+      );
+      setGoalTrackerData(result);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load goal tracker data"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="h-20 bg-gray-200 rounded"></div>
-            <div className="h-20 bg-gray-200 rounded"></div>
-            <div className="h-20 bg-gray-200 rounded"></div>
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Goal Tracker (1.5°C / Net-zero 2050)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  if (data.error) {
+  if (error) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Goal Tracker (1.5°C / Net-zero 2050)
-        </h3>
-        <div className="text-red-600">
-          Error: {data.error}
-        </div>
-      </div>
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Goal Tracker (1.5°C / Net-zero 2050)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-red-600">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm">{error}</span>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
+
+  if (!goalTrackerData || goalTrackerData.error) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Goal Tracker (1.5°C / Net-zero 2050)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-gray-500 text-sm">
+            Insufficient data for goal tracking analysis
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const { rai_pct, budget, velocity, pathway } = goalTrackerData;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Goal Tracker (1.5°C / Net-zero 2050)
-      </h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="h-5 w-5" />
+          Goal Tracker (1.5°C / Net-zero 2050)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
         {/* Real-time Alignment Index */}
-        {data.rai_pct !== undefined && (
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600 mb-2">
-              {data.rai_pct}%
+        {rai_pct !== undefined && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                Real-time Alignment Index
+              </span>
+              <Badge variant={rai_pct >= 100 ? "default" : "destructive"}>
+                {rai_pct}%
+              </Badge>
             </div>
-            <div className="text-sm font-medium text-gray-700 mb-1">
-              Real-time Alignment Index
-            </div>
-            <div className="text-xs text-gray-500">
+            <Progress value={Math.min(100, rai_pct)} className="h-2" />
+            <p className="text-xs text-gray-600">
               Target intensity vs current intensity. 100% means on target.
-            </div>
+            </p>
           </div>
         )}
 
         {/* YTD Carbon Budget */}
-        {data.budget && (
-          <div className="text-center">
-            <div className="text-lg font-bold text-green-600 mb-2">
-              {data.budget.days_ahead > 0 ? '+' : ''}{data.budget.days_ahead} days
+        {budget && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">YTD Carbon Budget</span>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  {budget.days_ahead > 0 ? "+" : ""}
+                  {budget.days_ahead} days
+                </span>
+              </div>
             </div>
-            <div className="text-sm font-medium text-gray-700 mb-1">
-              YTD Carbon Budget
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600">Actual:</span>
+                <span className="ml-2 font-medium">
+                  {budget.ytd_tons.toLocaleString()} t
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-600">Budget:</span>
+                <span className="ml-2 font-medium">
+                  {budget.ytd_budget_tons.toLocaleString()} t
+                </span>
+              </div>
             </div>
-            <div className="text-xs text-gray-500">
-              {Math.round(data.budget.ytd_tons).toLocaleString()} t / {Math.round(data.budget.ytd_budget_tons).toLocaleString()} t
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-600">
               Cumulative emissions vs proportional YTD budget.
-            </div>
+            </p>
           </div>
         )}
 
         {/* Decarbonization Velocity */}
-        {data.velocity && (
-          <div className="text-center">
-            <div className={`text-lg font-bold mb-2 ${data.velocity.on_track ? 'text-green-600' : 'text-red-600'}`}>
-              {data.velocity.on_track ? 'On Track' : 'Behind'}
+        {velocity && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                Decarbonization Velocity
+              </span>
+              <Badge variant={velocity.on_track ? "default" : "destructive"}>
+                {velocity.on_track ? "On track" : "Behind"}
+              </Badge>
             </div>
-            <div className="text-sm font-medium text-gray-700 mb-1">
-              Decarbonization Velocity
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600">Actual:</span>
+                <span className="ml-2 font-medium">
+                  {velocity.v_actual_g_per_kwh_per_yr} g/kWh/yr
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-600">Required:</span>
+                <span className="ml-2 font-medium">
+                  {velocity.v_required_g_per_kwh_per_yr} g/kWh/yr
+                </span>
+              </div>
             </div>
-            <div className="text-xs text-gray-500">
-              Actual: {data.velocity.v_actual_g_per_kwh_per_yr} g/kWh/yr
-            </div>
-            <div className="text-xs text-gray-500">
-              Required: {data.velocity.v_required_g_per_kwh_per_yr} g/kWh/yr
-            </div>
+            <p className="text-xs text-gray-600">
+              Compares observed intensity decline rate vs the rate needed to
+              meet this year's target.
+            </p>
           </div>
         )}
-      </div>
 
-      {/* 2050 Pathway Section */}
-      {data.pathway && (
-        <div className="border-t pt-6">
-          <h4 className="text-md font-semibold text-gray-800 mb-4">
-            2050 Pathway (Net-zero trajectory)
-          </h4>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Pathway Metrics */}
-            <div className="space-y-4">
-              {data.pathway.eta_year && (
-                <div className="text-center">
-                  <div className="text-xl font-bold text-purple-600 mb-2">
-                    {data.pathway.eta_year}
-                  </div>
-                  <div className="text-sm font-medium text-gray-700 mb-1">
-                    ETA to near-zero
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Year when current decline rate would reach near-zero intensity.
-                  </div>
-                </div>
-              )}
+        {/* 2050 Pathway */}
+        {pathway && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="text-sm font-medium">2050 Pathway</span>
             </div>
-
-            {/* Pathway Sparkline */}
-            {data.pathway.series && data.pathway.series.length > 0 && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h5 className="text-sm font-medium text-gray-700 mb-2">
-                  Target Emissions Pathway (to 2050)
-                </h5>
-                <div className="h-32">
-                  <svg width="100%" height="100%" viewBox="0 0 300 100" className="overflow-visible">
-                    {data.pathway.series.map((point, index) => {
-                      if (index === 0) return null;
-                      const prevPoint = data.pathway!.series[index - 1];
-                      const x1 = ((prevPoint.year - data.pathway!.series[0].year) / 
-                                (data.pathway!.series[data.pathway!.series.length - 1].year - data.pathway!.series[0].year)) * 280 + 10;
-                      const y1 = 90 - (prevPoint.target_emissions_mt / Math.max(...data.pathway!.series.map(p => p.target_emissions_mt))) * 70;
-                      const x2 = ((point.year - data.pathway!.series[0].year) / 
-                                (data.pathway!.series[data.pathway!.series.length - 1].year - data.pathway!.series[0].year)) * 280 + 10;
-                      const y2 = 90 - (point.target_emissions_mt / Math.max(...data.pathway!.series.map(p => p.target_emissions_mt))) * 70;
-                      
-                      return (
-                        <line
-                          key={index}
-                          x1={x1}
-                          y1={y1}
-                          x2={x2}
-                          y2={y2}
-                          stroke="#10b981"
-                          strokeWidth="2"
-                        />
-                      );
-                    })}
-                    {data.pathway.series.map((point, index) => {
-                      const x = ((point.year - data.pathway!.series[0].year) / 
-                               (data.pathway!.series[data.pathway!.series.length - 1].year - data.pathway!.series[0].year)) * 280 + 10;
-                      const y = 90 - (point.target_emissions_mt / Math.max(...data.pathway!.series.map(p => p.target_emissions_mt))) * 70;
-                      
-                      return (
-                        <circle
-                          key={index}
-                          cx={x}
-                          cy={y}
-                          r="3"
-                          fill="#10b981"
-                        />
-                      );
-                    })}
-                  </svg>
-                </div>
-                <div className="text-xs text-gray-500 mt-2">
-                  Annual targets to 2050 (0 Mt)
-                </div>
+            {pathway.eta_year && (
+              <div className="text-sm">
+                <span className="text-gray-600">ETA to near-zero:</span>
+                <span className="ml-2 font-medium">{pathway.eta_year}</span>
               </div>
             )}
+            <p className="text-xs text-gray-600">
+              Year when current decline rate would reach near-zero intensity.
+            </p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* How it works expander */}
-      <details className="mt-6">
-        <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
-          How the Goal Tracker works
-        </summary>
-        <div className="mt-3 text-sm text-gray-600 space-y-2">
-          <p><strong>Alignment Index:</strong> compares current CO₂ intensity to this year's target intensity derived from annual targets.</p>
-          <p><strong>Budget:</strong> integrates emissions from power output and intensity vs a proportional year-to-date budget.</p>
-          <p><strong>Velocity:</strong> compares observed intensity decline rate vs the rate needed to meet this year's target.</p>
-        </div>
-      </details>
-    </div>
+        {/* How it works expander */}
+        <details className="text-xs">
+          <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
+            How the Goal Tracker works
+          </summary>
+          <div className="mt-2 space-y-1 text-gray-600">
+            <p>
+              • <strong>Alignment Index:</strong> compares current CO₂ intensity
+              to this year's target intensity derived from annual targets.
+            </p>
+            <p>
+              • <strong>Budget:</strong> integrates emissions from power output
+              and intensity vs a proportional year-to-date budget.
+            </p>
+            <p>
+              • <strong>Velocity:</strong> compares observed intensity decline
+              rate vs the rate needed to meet this year's target.
+            </p>
+          </div>
+        </details>
+      </CardContent>
+    </Card>
   );
 };
 
-export default GoalTrackerComponent;
+export default GoalTracker;
