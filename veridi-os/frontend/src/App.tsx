@@ -7,9 +7,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Navbar from "./components/Navbar";
 import Breadcrumb from "./components/Breadcrumb";
 import RegulationsPage from "./components/RegulationsPage";
-import SustainabilityDashboard from "./pages/SustainabilityDashboard";
 import ScatterPage from "./pages/ScatterPage";
 import NetZeroPage from "./pages/NetZeroPage";
+import ComprehensiveSustainabilityDashboard from "./components/SustainabilityDashboard";
 import "./App.css";
 
 function App() {
@@ -42,7 +42,7 @@ function App() {
               path="/sustainability"
               element={
                 <ErrorBoundary>
-                  <SustainabilityDashboard />
+                  <ComprehensiveSustainabilityDashboard />
                 </ErrorBoundary>
               }
             />
@@ -98,14 +98,7 @@ function App() {
               path="/analytics"
               element={
                 <ErrorBoundary>
-                  <div className="container mx-auto p-6">
-                    <h1 className="text-3xl font-bold mb-6">Analytics</h1>
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                      <p className="text-gray-600">
-                        Advanced analytics and insights.
-                      </p>
-                    </div>
-                  </div>
+                  <ComprehensiveSustainabilityDashboard />
                 </ErrorBoundary>
               }
             />
